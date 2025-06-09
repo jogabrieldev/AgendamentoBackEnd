@@ -1,8 +1,5 @@
 import User from "../models/user.js";
 import bcrypt from 'bcrypt'
-import  jsonWebToken from "jsonwebtoken";
-
-const jwt = jsonWebToken
 
 export const controllerUser = {
 
@@ -44,14 +41,9 @@ export const controllerUser = {
         status})
         // console.log('new user' , newUser)
 
-        const token = jwt.sign(
-         { id: newUser.idUser, email: newUser.email }, 
-         process.env.JWT_SECRET,                         
-         { expiresIn: '1h' }                     
-        );
-
+       
         if(newUser){
-            return res.status(200).json({success:true , user:newUser, token:token})
+            return res.status(200).json({success:true , user:newUser})
         }
     } catch (error) {
         console.error('Erro no cadastro' , error)

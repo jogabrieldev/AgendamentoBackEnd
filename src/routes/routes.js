@@ -5,12 +5,18 @@ import { controllerService } from '../controller/controllerServices.js'
 import { controllerClient } from '../controller/controllerClient.js'
 import { verifyToken } from '../middleware/authenticate.js'
 import { sendMessage } from '../services/whatsappService.js'
+import { login } from '../controller/controllerAuthenticate.js'
 const router = express.Router()
 
 //user
 
+
 router.post('/user' , (req ,res)=>{
     controllerUser.registerUser(req ,res)
+})
+
+router.post('/authenticate' ,(req ,res)=>{
+    login(req ,res)
 })
 
 router.put('/user' , (req , res)=>{
@@ -52,15 +58,15 @@ router.get('/client/acesso/:token',(req , res)=>{
 });
 
 // 
-// router.post('/test/send' , async(req ,res )=>{
-//    const {telefone , texto} = req.body
+router.post('/test/send' , async(req ,res )=>{
+   const {telefone , texto} = req.body
 
-//      try {
-//     await sendMessage(telefone, texto);
-//     res.status(200).json({ success: true, message: 'Mensagem enviada com sucesso!' });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ success: false, message: 'Erro ao enviar mensagem.' });
-//   }
-// })
+     try {
+    await sendMessage(telefone, texto);
+    res.status(200).json({ success: true, message: 'Mensagem enviada com sucesso!' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Erro ao enviar mensagem.' });
+  }
+})
 export default router

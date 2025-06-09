@@ -44,42 +44,36 @@ export async function connectToWhatsApp() {
   });
 
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
-    const msg = messages[0];
-    if (!msg.message || msg.key.fromMe) return;
+  const msg = messages[0];
+  if (!msg.message || msg.key.fromMe) return;
 
-    const sender = msg.key.remoteJid;
+  const sender = msg.key.remoteJid;
+  console.log('📩 Mensagem recebida de:', sender);
 
-    // const telefone = sender.replace('@s.whatsapp.net', '')
+  const telefone = sender.replace('@s.whatsapp.net', ''); // remove o sufixo
+  const client = await Client.findOne({ where: { telefone } });
 
-    console.log('📩 Mensagem recebida de:', sender);
-    
-    // console.log(telefone)
-    //  const client = await Client.findOne({ where: { telefone } });
-    // const telefone = sender.replace('@s.whatsapp.net', '');
+  // if (!client) {
+  //   await sock.sendMessage(sender, {
+  //     text: '⚠️ Você ainda não está cadastrado. Por favor, entre em contato com o atendente.'
+  //   });
+  //   return;
+  // }
 
-// Remova qualquer +, espaço ou traços (se necessário)
-// const telefoneLimpo = telefone.replace(/\D/g, '');
+  console.log('✅ Cliente encontrado:', client.name);
 
-// Buscar com telefone limpo
-const client = await Client.findOne({ where: { telefone: '5562984815157'  } });
+  const { v4: uuidv4 } = await import('uuid');
+  client.tokenAcess = uuidv4();
+  await client.save();
 
-       if (!client) {
-    await sock.sendMessage(sender, { text: 'Cliente não encontrado. Por favor, cadastre-se.' });
-    return;
-  }
-   console.log('client' , client)
-        const { v4: uuidv4 } = await import('uuid');
-        client.tokenAcess = uuidv4();
-        await client.save();
-    const agendaLink = `http://localhost:3000/client/acesso/${client.tokenAcess}`; 
- 
+  const agendaLink = `http://localhost:3000/client/acesso/${client.tokenAcess}`;
 
-    await sock.sendMessage(sender, {
-      text: `Olá! 👋\nClique no link abaixo para agendar um horário querido cliente:\n${agendaLink}`,
-    });
-
-    console.log(`Mensagem de ${sender} respondida com link de agenda.`);
+  await sock.sendMessage(sender, {
+    text: `Olá, ${client.name}! 👋\nClique no link abaixo para agendar seu horário:\n${agendaLink}`
   });
+
+  console.log(`✅ Link de agendamento enviado para ${telefone}`);
+});
 
   return sock;
 }
