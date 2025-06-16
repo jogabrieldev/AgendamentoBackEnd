@@ -9,8 +9,6 @@ import { login } from '../controller/controllerAuthenticate.js'
 const router = express.Router()
 
 //user
-
-
 router.post('/user' , (req ,res)=>{
     controllerUser.registerUser(req ,res)
 })
@@ -27,20 +25,28 @@ router.put('/user' , (req , res)=>{
 
 router.post('/disponi' , (req , res)=>{
    controllerAvailability.registerAvailability(req ,res)
-})
+});
+
+router.get('/api/disponi', (req , res)=>{
+    controllerAvailability.getAllAvailabillity(req ,res)
+});
 
 router.put('/disponi' , (req ,res)=>{
    controllerAvailability.updateAvailabilityStatus(req ,res)
-})
+});
 
 // Service 
 router.post('/service' , (req , res)=>{
    controllerService.registerService(req , res)
-})
+});
+
+router.get('/api/service' , (req ,res)=>{
+   controllerService.getAllServices(req ,res)
+});
 
 router.delete('/service', (req , res )=>{
    controllerService.deleteService(req ,res)
-})
+});
 
 // Client
 

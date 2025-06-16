@@ -1,5 +1,6 @@
 import { DataTypes } from'sequelize';
 import sequelize from'../config/database.js';
+import User from './user.js';
 
 
 const Service = sequelize.define('service', {
@@ -25,7 +26,18 @@ const Service = sequelize.define('service', {
   price: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
-}
+},
+  idUser:{
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: User,
+      key: 'idUser'
+    },
+    onDelete:'NO ACTION',
+    onUpdate:'NO ACTION'
+  }  
+
 },{
   tableName: 'service'
 

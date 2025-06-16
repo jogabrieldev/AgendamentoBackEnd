@@ -1,6 +1,7 @@
 
 import { DataTypes } from'sequelize';
 import sequelize from'../config/database.js';
+import User from './user.js';
 
 const Availability = sequelize.define('availability', {
   idDispo: {
@@ -22,7 +23,7 @@ const Availability = sequelize.define('availability', {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: 'user', // barbeiro
+      model: User, // barbeiro
       key: 'idUser'
     },
     onDelete:'NO ACTION',
