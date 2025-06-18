@@ -5,7 +5,7 @@ export const controllerService = {
   async registerService(req, res) {
     const { name, descricao, duracao, price, idUser } = req.body;
 
-    console.log("corpo service", req.body);
+    // console.log("corpo service", req.body);
     try {
       if (!name || !duracao || !price || !idUser) {
         res
@@ -55,6 +55,38 @@ export const controllerService = {
       return res.status(500).json({ message: "Erro no server" });
     }
   },
+
+ async updateService(req, res) {
+  try {
+    const { id } = req.params;
+    const { name, descricao, duracao, price } = req.body;
+
+    const service = await Service.findByPk(id);
+
+    if (!service) {
+      return res.status(404).json({ message: 'Serviço não encontrado' });
+    }
+
+    // Atualiza os campos recebidos
+    service.name = name;
+    service.descricao = descricao;
+    service.duracao = duracao;
+    service.price = price;
+
+    await service.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Serviço atualizado com sucesso',
+      service: service
+    });
+
+  } catch (error) {
+    console.error('Erro ao atualizar o serviço:', error);
+    res.status(500).json({ message: 'Erro interno do servidor' });
+  }
+},
+
 
   async deleteService(req, res) {
     const { id } = req.params;

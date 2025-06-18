@@ -6,9 +6,7 @@ export const controllerAvailability  = {
   async registerAvailability(req, res) {
     try {
       const { horario, status, idUser } = req.body;
-
-      console.log('corpo' , req.body)
-
+      
       if (!horario || !status || !idUser) {
         return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
       }
@@ -62,7 +60,7 @@ export const controllerAvailability  = {
   async updateAvailabilityStatus(req, res) {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { horario, status } = req.body;
 
     if (!status) {
       return res.status(400).json({ message: 'O campo status é obrigatório' });
@@ -74,15 +72,39 @@ export const controllerAvailability  = {
       return res.status(404).json({ message: 'Disponibilidade não encontrada' });
     }
 
-    availability.status = status;
+    availability.horario = horario !== undefined ? horario : hoursDisponivel.horario;
+    availability.status = status !== undefined ? status : hoursDisponivel.status;
+
     await availability.save();
 
-    res.status(200).json({ success: true, message: 'Status atualizado com sucesso', availability });
+    res.status(200).json({ success: true, message: 'Status atualizado com sucesso', hours: availability });
 
   } catch (error) {
     console.error('Erro ao atualizar status da disponibilidade:', error);
     res.status(500).json({ message: 'Erro interno do servidor' });
   }
-}
+},
+
+ async deleteAvailability(req ,res){
+      
+ const  {id}  = req.params;
+
+    try {
+      const hoursDisponivel = await Availability.findByPk(id);
+
+      if (!hoursDisponivel) {
+        return res.status(404).json({ message: "Serviço não encontrado" });
+      }
+
+      await hoursDisponivel.destroy();
+
+      res
+        .status(200)
+        .json({ success: true, message: "Horario deletado com sucesso" });
+    } catch (error) {
+      console.error("Erro ao deletar serviço:", error);
+      res.status(500).json({ message: "Erro ao deletar serviço" });
+    }
+ }
 
 }

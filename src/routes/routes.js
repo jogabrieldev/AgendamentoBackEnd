@@ -23,7 +23,7 @@ router.put('/user' , (req , res)=>{
 
 //Disponnibilidade
 
-router.post('/disponi' , (req , res)=>{
+router.post('/api/disponi' , (req , res)=>{
    controllerAvailability.registerAvailability(req ,res)
 });
 
@@ -31,9 +31,13 @@ router.get('/api/disponi', (req , res)=>{
     controllerAvailability.getAllAvailabillity(req ,res)
 });
 
-router.put('/disponi' , (req ,res)=>{
+router.put('/api/disponi/:id' , (req ,res)=>{
    controllerAvailability.updateAvailabilityStatus(req ,res)
 });
+
+router.delete('/api/disponi/:id', (req ,res)=>{
+   controllerAvailability.deleteAvailability(req ,res)
+})
 
 // Service 
 router.post('/service' , (req , res)=>{
@@ -44,7 +48,11 @@ router.get('/api/service' , (req ,res)=>{
    controllerService.getAllServices(req ,res)
 });
 
-router.delete('/service', (req , res )=>{
+router.put('/api/service/:id' , (req ,res)=>{
+  controllerService.updateService(req ,res)
+})
+
+router.delete('/api/service/:id', (req , res )=>{
    controllerService.deleteService(req ,res)
 });
 
