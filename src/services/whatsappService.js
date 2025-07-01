@@ -1,5 +1,6 @@
 import { makeWASocket, DisconnectReason, useMultiFileAuthState } from '@whiskeysockets/baileys';
 import qrcode from 'qrcode-terminal';
+const { v4: uuidv4 } = await import('uuid');
 import Client from '../models/client.js';
 
 let sock;
@@ -51,28 +52,43 @@ export async function connectToWhatsApp() {
   console.log('📩 Mensagem recebida de:', sender);
 
   const telefone = sender.replace('@s.whatsapp.net', ''); // remove o sufixo
-  const client = await Client.findOne({ where: { telefone } });
+  let client = await Client.findOne({ where: { telefone } });
 
-  // if (!client) {
-  //   await sock.sendMessage(sender, {
-  //     text: '⚠️ Você ainda não está cadastrado. Por favor, entre em contato com o atendente.'
-  //   });
-  //   return;
-  // }
+if (!client) {
+    // 👉 Se cliente não existe, cria com token novo
+    const tokenAcess = uuidv4();
+
+    client = await Client.create({
+      name: '',              // Nome vazio, ele vai cadastrar depois
+      telefone: telefone,
+      dataCadastro: new Date(),
+      idUser: 1,             // Ajuste: coloque o idUser dono do barbeiro (exemplo: 1)
+      tokenAcess: tokenAcess
+    });
+
+    console.log('🆕 Novo cliente criado:', client);
+  } else {
+    // 👉 Se cliente já existe, só atualiza o token
+    client.tokenAcess = uuidv4();
+    await client.save();
+  }
 
   console.log('✅ Cliente encontrado:', client.name);
 
-  const { v4: uuidv4 } = await import('uuid');
-  client.tokenAcess = uuidv4();
-  await client.save();
-
-  const agendaLink = `http://localhost:3000/client/acesso/${client.tokenAcess}`;
+  try { 
+     const agendaLink = `http://localhost:4200/client/acesso/${client.tokenAcess}`;
 
   await sock.sendMessage(sender, {
     text: `Olá, ${client.name}! 👋\nClique no link abaixo para agendar seu horário:\n${agendaLink}`
   });
 
   console.log(`✅ Link de agendamento enviado para ${telefone}`);
+    
+  } catch (error) {
+    console.error('Erro ao ennviar')
+  }
+
+ 
 });
 
   return sock;

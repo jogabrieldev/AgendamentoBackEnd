@@ -1,5 +1,8 @@
 import { DataTypes } from'sequelize';
 import sequelize from'../config/database.js';
+import User from './user.js';
+import Service from './services.js';
+import Client from './client.js';
 
 const Appointment = sequelize.define('appointment', {
   idAppointment: {
@@ -24,7 +27,7 @@ const Appointment = sequelize.define('appointment', {
     type: DataTypes.TEXT,
     allowNull: true
   },
-  preço: {
+  preco: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false
   },
@@ -33,7 +36,7 @@ const Appointment = sequelize.define('appointment', {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: 'client',
+      model: Client,
       key: 'idClient'
     },
     onDelete:'NO ACTION',
@@ -44,7 +47,7 @@ const Appointment = sequelize.define('appointment', {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: 'user',
+      model: User,
       key: 'idUser'
     },
     onUpdate:'NO ACTION',
@@ -54,7 +57,7 @@ const Appointment = sequelize.define('appointment', {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: 'service',
+      model: Service,
       key: 'idServi'
     },
     onDelete:'NO ACTION',

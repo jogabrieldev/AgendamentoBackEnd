@@ -2,7 +2,7 @@ import express from 'express'
 import dataBase  from './src/models/initModels.js'
 import './src/models/associations.js'
 import router from './src/routes/routes.js'
-// import { connectToWhatsApp } from './src/services/whatsappService.js'
+import { connectToWhatsApp } from './src/services/whatsappService.js'
 import cors from 'cors'
 
 const app = express()
@@ -22,14 +22,15 @@ app.use(express.json())
 
 app.use(router)
 
-// connectToWhatsApp();
-//{alter:true}
 
-dataBase.sequelize.sync().then(()=>{
+
+connectToWhatsApp();
+dataBase.sequelize.sync({alter:true}).then(()=>{
     console.log('banco Sicronizado')
 
     app.listen(3000,()=>{
     console.log('Server road port 3000')
+    
 })
 })
 

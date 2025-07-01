@@ -1,5 +1,6 @@
 import { DataTypes } from'sequelize';
 import sequelize from'../config/database.js';
+import User from './user.js';
 
 
 const Client = sequelize.define('client', {
@@ -31,9 +32,11 @@ const Client = sequelize.define('client', {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: 'user', 
+      model: User, 
       key: 'idUser',
-    }
+    },
+    onDelete:'NO ACTION',
+    onUpdate:'NO ACTION'
 }}, {
   tableName: "client"
 

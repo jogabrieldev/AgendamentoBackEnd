@@ -45,16 +45,46 @@ export const controllerService = {
     }
   },
 
+  async getAllServicesId(req, res) {
+  try {
+    const { barberId } = req.query;  // ← pegar o filtro opcional via query string
+
+    let where = {};
+    if (barberId) {
+      where.idUser = barberId;
+    }
+
+    const services = await Service.findAll({ where });
+
+    res.status(200).json({ service: services });
+
+  } catch (error) {
+    console.error('Erro ao buscar serviços:', error);
+    res.status(500).json({ message: 'Erro ao buscar serviços' });
+  }
+},
+
+
   async getAllServices(req, res) {
+     
     try {
-      const listService = await Service.findAll({ raw: true });
-      console.log("serviço", listService);
-      return res.status(200).json({ message: "Success", service: listService });
+      const { barberId } = req.query;
+
+      let where = {};
+
+      if (barberId) {
+        where.idUser = barberId;  // Filtra pelos serviços do barbeiro
+      }
+
+      const services = await Service.findAll({ where });
+
+      res.status(200).json({ service: services });
     } catch (error) {
-      console.error("Erro na aplication", error);
-      return res.status(500).json({ message: "Erro no server" });
+      console.error('Erro ao buscar serviços:', error);
+      res.status(500).json({ message: 'Erro ao buscar serviços' });
     }
   },
+  
 
  async updateService(req, res) {
   try {

@@ -6,6 +6,7 @@ import { controllerClient } from '../controller/controllerClient.js'
 import { verifyToken } from '../middleware/authenticate.js'
 import { sendMessage } from '../services/whatsappService.js'
 import { login } from '../controller/controllerAuthenticate.js'
+import { getAvailableTimes, createAppointment } from '../controller/controllerAppointment.js';
 const router = express.Router()
 
 //user
@@ -48,6 +49,15 @@ router.get('/api/service' , (req ,res)=>{
    controllerService.getAllServices(req ,res)
 });
 
+
+router.get('/horarios-disponiveis/:data',(req ,res)=>{
+   getAvailableTimes(req, res)
+});
+router.post('/appointments', (req ,res)=>{
+   createAppointment(req ,res)
+} );
+
+
 router.put('/api/service/:id' , (req ,res)=>{
   controllerService.updateService(req ,res)
 })
@@ -58,7 +68,7 @@ router.delete('/api/service/:id', (req , res )=>{
 
 // Client
 
-router.post('/client', verifyToken, (req ,res)=>{
+router.post('/client', (req ,res)=>{
     controllerClient.registerClient(req , res)
 })
 
@@ -69,6 +79,10 @@ router.post('/client/link/:idClient', verifyToken,(req ,res)=>{
 
 router.get('/client/acesso/:token',(req , res)=>{
    controllerClient.accessByToken(req ,res)
+});
+
+router.put('/client/updateByToken/:token', (req, res) => {
+  controllerClient.updateClientByToken(req, res);
 });
 
 // 
