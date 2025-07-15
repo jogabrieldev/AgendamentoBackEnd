@@ -1,41 +1,71 @@
+
+import Availability from '../models/availability.js';
 import Appointment from '../models/appointment.js';
-import { Op } from 'sequelize';
 import Client from '../models/client.js';
-import Service from '../models/services.js';
-import { sendMessage } from '../services/whatsappService.js';
+import { Op } from 'sequelize';
 
-// GET /horarios-disponiveis/:data
-export async function getAvailableTimes(req, res) {
+// GET /horarios-disponiveis-mes/:anoMes
+// CONTROLLER
+export async function getDisponibilidadeDoDia(req, res) {
   try {
-    const data = req.params.data; 
+    const dataSelecionada = req.params.data; // "2025-07-14"
 
-    
+    // horários base
+    const horariosBase = await Availability.findAll({
+       where: { status: 'Disponível' }, // 👈 só horários que o cabeleireiro marcou como disponíveis
+  attributes: ['idDispo', 'horario'],
+  order: [['horario', 'ASC']]
+    });
+
+    // agendados naquele dia
     const agendados = await Appointment.findAll({
       where: {
-        data,
-        status: { [Op.in]: ['Agendado', 'Confirmado'] } // considerar status que bloqueiam horário
+        data: dataSelecionada,
+        status: {
+          [Op.in]: ['Agendado', 'Indisponível']
+        }
       },
       attributes: ['horario']
     });
 
-    // Lista de horários reservados
-    const horariosReservados = agendados.map(a => a.horario);
+    const agendadosSet = new Set(agendados.map(a => a.horario));
 
-    // Exemplo simples: horários padrão fixos para o dia (você pode buscar de outro lugar)
-    const horariosPadrao = [
-      '08:00:00', '09:00:00', '10:00:00', '11:00:00',
-      '13:00:00', '14:00:00', '15:00:00', '16:00:00', '17:00:00'
-    ];
+    const resultado = horariosBase
+  .filter(h => !agendadosSet.has(h.idDispo)) // exclui os que estão agendados
+  .map(h => ({
+    idDispo: h.idDispo,
+    horario: h.horario
+  }));
 
-    // Filtra horários disponíveis removendo os reservados
-    const disponiveis = horariosPadrao.filter(h => !horariosReservados.includes(h));
-
-    return res.json(disponiveis);
+    return res.json(resultado);
   } catch (error) {
-    console.error('Erro ao buscar horários disponíveis:', error);
+    console.error('Erro ao buscar horários do dia:', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }
+
+
+export async function getAppointments(req, res) {
+  try {
+    const agendados = await Appointment.findAll({
+      where: { status: 'Agendado' }, // ou o status que você usa
+      include: [
+        {
+          model: Client,
+          attributes: ['name'] // campos que você precisa
+        }
+      ],
+      order: [['data', 'DESC']], // ordena do mais recente para o mais antigo
+      limit: 10 // se quiser limitar os últimos 10
+    });
+
+    res.json(agendados);
+  } catch (err) {
+    console.error('Erro ao buscar agendamentos:', err);
+    res.status(500).json({ error: 'Erro ao buscar agendamentos' });
+  }
+}
+
 
 // POST /appointments
 export async function createAppointment(req, res) {
@@ -68,24 +98,14 @@ export async function createAppointment(req, res) {
       preco,
       nota
     });
-     const client = await Client.findByPk(idClient);
-    const service = await Service.findByPk(idServi[0]); // ← assume 1 serviço
 
-    if (client && service && client.telefone) {
-      const mensagem = 
-        `✅ *Agendamento Confirmado!*\n\n` +
-        `👤 Cliente: *${client.name}*\n` +
-        `💈 Serviço: *${service.name}*\n` +
-        `📅 Data: *${data}*\n` +
-        `⏰ Horário: *${horario}*\n\n` +
-        `Nos vemos em breve!`;
+    // await Availability.update(
+    //   { status: 'Agendado' },
+    //   { where: { idDispo: horario } }
+    // );
+     
 
-      await sendMessage(client.telefone, mensagem);
-      console.log('📤 Mensagem enviada para cliente:', client.telefone);
-    }
-
-
-    return res.status(201).json(agendamento);
+    return res.status(201).json({message:agendamento});
   } catch (error) {
     console.error('Erro ao criar agendamento:', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });

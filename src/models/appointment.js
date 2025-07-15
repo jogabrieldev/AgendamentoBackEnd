@@ -3,6 +3,7 @@ import sequelize from'../config/database.js';
 import User from './user.js';
 import Service from './services.js';
 import Client from './client.js';
+import Availability from './availability.js'
 
 const Appointment = sequelize.define('appointment', {
   idAppointment: {
@@ -15,13 +16,19 @@ const Appointment = sequelize.define('appointment', {
     allowNull: false
   },
   horario: {
-    type: DataTypes.TIME,
-    allowNull: false
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references:{
+       model:Availability,
+       key:'idDispo'
+    },
+    onDelete:'NO ACTION',
+    onUpdate:'NO ACTION'
   },
   status: {
     type: DataTypes.STRING(20),
     allowNull: false,
-    defaultValue: 'Agendado' // ou agendado, concluído, cancelado
+    defaultValue: 'Disponível' // ou agendado, concluído, cancelado
   },
   nota: {
     type: DataTypes.TEXT,

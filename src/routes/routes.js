@@ -6,7 +6,7 @@ import { controllerClient } from '../controller/controllerClient.js'
 import { verifyToken } from '../middleware/authenticate.js'
 import { sendMessage } from '../services/whatsappService.js'
 import { login } from '../controller/controllerAuthenticate.js'
-import { getAvailableTimes, createAppointment } from '../controller/controllerAppointment.js';
+import { getDisponibilidadeDoDia, createAppointment , getAppointments } from '../controller/controllerAppointment.js';
 const router = express.Router()
 
 //user
@@ -49,13 +49,18 @@ router.get('/api/service' , (req ,res)=>{
    controllerService.getAllServices(req ,res)
 });
 
-
+// AGENDAMENTO
 router.get('/horarios-disponiveis/:data',(req ,res)=>{
-   getAvailableTimes(req, res)
+   getDisponibilidadeDoDia(req ,res)
 });
+
+router.get("/appoiments" , (req ,res)=>{
+   getAppointments(req , res)
+}) 
 router.post('/appointments', (req ,res)=>{
    createAppointment(req ,res)
 } );
+
 
 
 router.put('/api/service/:id' , (req ,res)=>{

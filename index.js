@@ -25,7 +25,7 @@ app.use(router)
 
 
 connectToWhatsApp();
-dataBase.sequelize.sync({alter:true}).then(()=>{
+dataBase.sequelize.sync().then(()=>{
     console.log('banco Sicronizado')
 
     app.listen(3000,()=>{
