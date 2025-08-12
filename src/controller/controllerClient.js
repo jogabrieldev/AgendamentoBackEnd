@@ -9,8 +9,6 @@ export const controllerClient = {
       const { name, telefone , idUser } = req.body;
       // const idUser = req.userId;
 
-      console.log('corpo' , req.body)
-
       if (!name || !telefone || !idUser) {
         return res.status(404).json({ message: "Dados obrigatorios não passados" });
       }
@@ -23,7 +21,7 @@ export const controllerClient = {
       });
 
       if (newClient) {
-        res
+        return res
           .status(201)
           .json({
             success: true,
@@ -33,7 +31,7 @@ export const controllerClient = {
       }
     } catch (error) {
       console.error("Erro no controller client", error);
-      res.status(500).json({ message: "Erro no server" });
+      return res.status(500).json({ message: "Erro no server" });
     }
   },
 
@@ -58,7 +56,7 @@ export const controllerClient = {
     // Link de acesso (envie por WhatsApp, e-mail, etc.
     const link = `http://localhost:3000/client/acesso/${tokenAcesso}`;
 
-    res.status(200).json({ success: true, link });
+    return res.status(200).json({ success: true, link });
   },
 
   async updateClientByToken(req, res) {
@@ -86,6 +84,24 @@ export const controllerClient = {
     console.error('Erro ao atualizar cliente:', error);
     res.status(500).json({ message: 'Erro interno ao atualizar cliente.' });
   }
+},
+
+async  validatePhoneClient(req, res) {
+        const {phone} = req.params
+        try {
+           if(!phone){
+            return res.status(400).json({message:"Numero de telefone não foi passado!"})
+           }
+           
+           const verifique =  await Client.findOne({where:{telefone: phone} })
+           if(!verifique){
+             return res.status(400).json({message:"Numero não presente na nosa base!"})
+           }
+           return res.status(200).json({message:"Numero encontrado na nossa base" , success:true , verifique})
+        } catch (error) {
+           console.error('Erro em verificar o contato passsado')
+           return res.status(500).json({message:"Erro no server para validar esse contato"})
+        }
 },
 
 

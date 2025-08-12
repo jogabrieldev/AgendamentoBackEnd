@@ -8,16 +8,18 @@ export const controllerUser = {
      
     try {
         const {name, data, email,userCpf, password, telefone, status} = req.body
+
         if(!name || !data || !email || !telefone|| !password){
-            res.status(400).json({message:'Falta informações para cadastro de usuario'})
+            return res.status(400).json({message:'Falta informações para cadastro de usuario'})
         }
 
         const dateNow = new Date();
+        console.log('data', req.body)
         
-        const dataAtual = dateNow.toISOString().split('T')[0]; // "2025-05-23" por exemplo
+      const dataAtual = dateNow.toISOString().split('T')[0]; 
 
       if (dataAtual !== data) {
-      res.status(400).json({ message: 'Data de cadastro precisa ser a data atual' });
+        return res.status(400).json({ message: 'Data de cadastro precisa ser a data atual'});
       }
 
         const userExists = await User.findOne({ where: { email } });
@@ -47,7 +49,7 @@ export const controllerUser = {
         }
     } catch (error) {
         console.error('Erro no cadastro' , error)
-        res.status(500).json({message: "Erro ao cadastrar usuario"})
+        return res.status(500).json({message: "Erro ao cadastrar usuario"})
     }
   },
 

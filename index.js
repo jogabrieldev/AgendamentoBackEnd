@@ -22,8 +22,6 @@ app.use(express.json())
 
 app.use(router)
 
-
-
 connectToWhatsApp();
 dataBase.sequelize.sync().then(()=>{
     console.log('banco Sicronizado')

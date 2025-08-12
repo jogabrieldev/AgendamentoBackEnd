@@ -77,7 +77,7 @@ export const controllerAvailability  = {
 
     await availability.save();
 
-    res.status(200).json({ success: true, message: 'Status atualizado com sucesso', hours: availability });
+    res.status(200).json({ success: true, message: 'Status atualizado com sucesso', hours: availability});
 
   } catch (error) {
     console.error('Erro ao atualizar status da disponibilidade:', error);

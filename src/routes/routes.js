@@ -81,6 +81,9 @@ router.post('/client/link/:idClient', verifyToken,(req ,res)=>{
    controllerClient.generateAccessLink(req , res)
 } );
 
+router.get("/client/:id" , verifyToken, (req , res)=>{
+   controllerClient.validatePhoneClient(req ,res)
+})
 
 router.get('/client/acesso/:token',(req , res)=>{
    controllerClient.accessByToken(req ,res)

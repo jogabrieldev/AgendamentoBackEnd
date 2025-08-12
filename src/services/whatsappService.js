@@ -45,13 +45,15 @@ export async function connectToWhatsApp() {
   });
 
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
+
   const msg = messages[0];
+  console.log("Mensagem")
   if (!msg.message || msg.key.fromMe) return;
 
-  const sender = msg.key.remoteJid;
-  console.log('📩 Mensagem recebida de:', sender);
+  const numeroDeTelefone = msg.key.remoteJid;
+  console.log('📩 Mensagem recebida de:', numeroDeTelefone);
 
-  const telefone = sender.replace('@s.whatsapp.net', ''); // remove o sufixo
+  const telefone = numeroDeTelefone.replace('@s.whatsapp.net', ''); // remove o sufixo
   let client = await Client.findOne({ where: { telefone } });
 
 if (!client) {
@@ -69,8 +71,8 @@ if (!client) {
     console.log('🆕 Novo cliente criado:', client);
   } else {
     // 👉 Se cliente já existe, só atualiza o token
-    client.tokenAcess = uuidv4();
-    await client.save();
+    // client.tokenAcess = uuidv4();
+    // await client.save();
   }
 
   console.log('✅ Cliente encontrado:', client.name);
@@ -78,7 +80,7 @@ if (!client) {
   try { 
      const agendaLink = `http://localhost:4200/client/acesso/${client.tokenAcess}`;
 
-  await sock.sendMessage(sender, {
+  await sock.sendMessage(numeroDeTelefone, {
     text: `Olá, ${client.name}! 👋\nClique no link abaixo para agendar seu horário:\n${agendaLink}`
   });
 

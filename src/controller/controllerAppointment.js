@@ -4,8 +4,7 @@ import Appointment from '../models/appointment.js';
 import Client from '../models/client.js';
 import { Op } from 'sequelize';
 
-// GET /horarios-disponiveis-mes/:anoMes
-// CONTROLLER
+
 export async function getDisponibilidadeDoDia(req, res) {
   try {
     const dataSelecionada = req.params.data; // "2025-07-14"

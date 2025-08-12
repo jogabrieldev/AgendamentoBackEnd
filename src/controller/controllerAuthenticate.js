@@ -18,8 +18,7 @@ export const login = async (req, res) => {
       return res.status(401).json({ error: 'Telefone ou senha inválidos' });
     }
 
-    // Aqui você pode criar um token JWT, iniciar sessão, etc.
-    // Por exemplo:
+    
 
      const token = jwt.sign(
          { id: User.idUser, email: User.email }, 
@@ -27,7 +26,6 @@ export const login = async (req, res) => {
          { expiresIn: '1h' }                     
         );
 
-    // const token = jwt.sign({ idUser: user.idUser }, 'seu_segredo', { expiresIn: '1h' });
 
     return res.json({
       message: 'Autenticado com sucesso',
