@@ -5,9 +5,9 @@ export const controllerAvailability  = {
 
   async registerAvailability(req, res) {
     try {
-      const { horario, status, idUser } = req.body;
+      const { horario, bodyStatus, idUser } = req.body;
       
-      if (!horario || !status || !idUser) {
+      if (!horario || !bodyStatus || !idUser) {
         return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
       }
 
@@ -15,6 +15,19 @@ export const controllerAvailability  = {
       if (!user) {
         return res.status(404).json({ message: 'Usuário (barbeiro) não encontrado' });
       }
+      
+      const status = bodyStatus
+
+      const valoresValidos = ["Disponível", "Indisponivel" , "Agendado" , "Confirmado"];
+      if (!valoresValidos.includes(status)) {
+       return res.status(402).json({
+       message: "Valor de status é inválido",
+       success: false
+     });
+    }
+
+
+
 
       const horarioExistente = await Availability.findOne({
       where: {
@@ -60,11 +73,22 @@ export const controllerAvailability  = {
   async updateAvailabilityStatus(req, res) {
   try {
     const { id } = req.params;
-    const { horario, status } = req.body;
+    const { horario, bodyStatus} = req.body;
 
-    if (!status) {
+    if (!bodyStatus) {
       return res.status(400).json({ message: 'O campo status é obrigatório' });
     }
+
+    const status = bodyStatus
+      
+      const valoresValidos = ["Disponível", "Indisponivel" , "Agendado" , "Confirmado"];
+      if (!valoresValidos.includes(status)) {
+       return res.status(402).json({
+       message: "Valor de status é inválido",
+       success: false
+     });
+    }
+
 
     const availability = await Availability.findByPk(id);
 

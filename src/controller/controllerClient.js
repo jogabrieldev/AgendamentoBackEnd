@@ -2,22 +2,42 @@ import Client from "../models/client.js";
 import User from "../models/user.js";
 import { v4 as uuidv4 } from "uuid";
 import Service from "../models/services.js";
+import { normalizarTelefone } from "../utils/phone.js";
 
 export const controllerClient = {
   async registerClient(req, res) {
     try {
-      const { name, telefone , idUser } = req.body;
-      // const idUser = req.userId;
+      let { name, phone , idUser , token} = req.body
 
-      if (!name || !telefone || !idUser) {
+      if (!name || !phone) {
         return res.status(404).json({ message: "Dados obrigatorios não passados" });
       }
 
+      if(!idUser){
+         idUser = 1
+       }
+
+       const telefone = normalizarTelefone(phone);
+
+       console.log(telefone)
+     
+      // const validPhone = Client.findOne({where:{telefone: telefone}})
+      
+      // if(validPhone){
+      //   return res.status(422).json({message:"numero ja cadastrado no sistema"})
+      // }
+
+  
+      const tokenAcess = token || uuidv4();
+      if(!tokenAcess){
+         return res.status(400).json({message:"Erro para gerar token do cliente!"})
+      }
       const newClient = await Client.create({
         name,
         telefone,
         dataCadastro: new Date(),
         idUser,
+        tokenAcess
       });
 
       if (newClient) {
@@ -31,20 +51,23 @@ export const controllerClient = {
       }
     } catch (error) {
       console.error("Erro no controller client", error);
-      return res.status(500).json({ message: "Erro no server" });
+      return res.status(500).json({ message: "Erro no server para cadastrar cleinte" });
     }
   },
 
   async generateAccessLink(req, res) {
-    const { idClient } = req.params;
+    const { numberClient } = req.params;
+    console.log(numberClient)
+    if(!numberClient){
+       return res.status(400).json({message:"E preciso ser passado o numero so cliente"})
+    }
 
-    const client = await Client.findByPk(idClient);
-    console.log("cliente", client);
+    const client = await Client.findOne( {where: {telefone: numberClient}});
+    
+
     if (!client) {
       return res.status(404).json({ message: "Cliente não encontrado" });
     }
-
-    console.log("token", uuidv4());
 
     // Gera um token de acesso simples
     const tokenAcesso = uuidv4();
@@ -75,14 +98,14 @@ export const controllerClient = {
 
     await client.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Cadastro finalizado com sucesso!',
       client
     });
   } catch (error) {
     console.error('Erro ao atualizar cliente:', error);
-    res.status(500).json({ message: 'Erro interno ao atualizar cliente.' });
+    return res.status(500).json({ message: 'Erro interno ao atualizar cliente.' });
   }
 },
 
@@ -114,15 +137,16 @@ async  validatePhoneClient(req, res) {
       return res.status(404).json({ message: "Link inválido ou expirado" });
     }
 
-    let service = []
+    // let service = []
 
-     if (client.name && client.telefone) {
-      service = await Service.findAll({
-      where: { idUser: client.idUser }
+     const service = await Service.findAll({
+       where: { idUser: client.idUser }
     });
-  }
+
+    console.log(service)
+
     // Aqui você pode retornar os dados que o cliente pode acessar
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       client: client,
       servico: service

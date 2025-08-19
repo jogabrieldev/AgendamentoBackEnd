@@ -1,7 +1,9 @@
 
 import Availability from '../models/availability.js';
 import Appointment from '../models/appointment.js';
+import { sendMessage } from '../services/whatsappService.js';
 import Client from '../models/client.js';
+import Service from '../models/services.js';
 import { Op } from 'sequelize';
 
 
@@ -58,7 +60,7 @@ export async function getAppointments(req, res) {
       limit: 10 // se quiser limitar os últimos 10
     });
 
-    res.json(agendados);
+    return res.status(200).json({message:" Sucesso em buscar agendamentos" ,success:true ,  agendados:agendados});
   } catch (err) {
     console.error('Erro ao buscar agendamentos:', err);
     res.status(500).json({ error: 'Erro ao buscar agendamentos' });
@@ -71,14 +73,12 @@ export async function createAppointment(req, res) {
   try {
     const { data, horario, idClient, idUser, idServi, preco, nota } = req.body;
 
-    console.log('respostas' , req.body)
-
-    // Verificar se o horário está livre (não existe agendamento para data+horario)
+    // Verificar se o horário está livre
     const existe = await Appointment.findOne({
       where: {
         data,
         horario,
-        status: { [Op.in]: ['Agendado', 'Confirmado'] }
+        status: { [Op.in]: ['Agendado', 'Confirmado', 'Indisponivel'] }
       }
     });
 
@@ -98,15 +98,30 @@ export async function createAppointment(req, res) {
       nota
     });
 
-    // await Availability.update(
-    //   { status: 'Agendado' },
-    //   { where: { idDispo: horario } }
-    // );
-     
+    if (!agendamento) {
+      return res.status(500).json({ error: 'Erro ao criar agendamento' });
+    }
 
-    return res.status(201).json({message:agendamento});
+    // Buscar cliente e serviço(s) para enviar mensagem
+    const client = await Client.findByPk(idClient);
+    const services = await Service.findAll({ where: { idServi } });
+
+    const nomeServicos = services.map(s => s.name).join(', ');
+
+    const message = `Olá, ${client.name}! 👋\nSeu agendamento foi realizado com sucesso.\n\nServiço(s): ${nomeServicos}\nData: ${data}\nHorário: ${horario}\n\nAguardamos você!`;
+
+    console.log("Cliente agendamento" ,client.telefone)
+
+    await sendMessage(client.telefone, message);
+
+    return res.status(201).json({
+      message: "Agendamento realizado com sucesso e mensagem enviada ao cliente!",
+      agendamento
+    });
+
   } catch (error) {
     console.error('Erro ao criar agendamento:', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }
+

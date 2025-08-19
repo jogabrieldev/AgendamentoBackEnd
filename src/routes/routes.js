@@ -49,6 +49,14 @@ router.get('/api/service' , (req ,res)=>{
    controllerService.getAllServices(req ,res)
 });
 
+router.put('/api/service/:id' , (req ,res)=>{
+  controllerService.updateService(req ,res)
+})
+
+router.delete('/api/service/:id', (req , res )=>{
+   controllerService.deleteService(req ,res)
+});
+
 // AGENDAMENTO
 router.get('/horarios-disponiveis/:data',(req ,res)=>{
    getDisponibilidadeDoDia(req ,res)
@@ -62,26 +70,17 @@ router.post('/appointments', (req ,res)=>{
 } );
 
 
-
-router.put('/api/service/:id' , (req ,res)=>{
-  controllerService.updateService(req ,res)
-})
-
-router.delete('/api/service/:id', (req , res )=>{
-   controllerService.deleteService(req ,res)
-});
-
 // Client
 
 router.post('/client', (req ,res)=>{
     controllerClient.registerClient(req , res)
-})
+});
 
-router.post('/client/link/:idClient', verifyToken,(req ,res)=>{
+router.get('/client/link/:numberClient', verifyToken,(req ,res)=>{
    controllerClient.generateAccessLink(req , res)
 } );
 
-router.get("/client/:id" , verifyToken, (req , res)=>{
+router.get("/client/phone/:phone" , (req , res)=>{
    controllerClient.validatePhoneClient(req ,res)
 })
 
@@ -93,16 +92,5 @@ router.put('/client/updateByToken/:token', (req, res) => {
   controllerClient.updateClientByToken(req, res);
 });
 
-// 
-router.post('/test/send' , async(req ,res )=>{
-   const {telefone , texto} = req.body
 
-     try {
-    await sendMessage(telefone, texto);
-    res.status(200).json({ success: true, message: 'Mensagem enviada com sucesso!' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: 'Erro ao enviar mensagem.' });
-  }
-})
 export default router

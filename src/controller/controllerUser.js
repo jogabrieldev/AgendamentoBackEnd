@@ -14,8 +14,7 @@ export const controllerUser = {
         }
 
         const dateNow = new Date();
-        console.log('data', req.body)
-        
+       
       const dataAtual = dateNow.toISOString().split('T')[0]; 
 
       if (dataAtual !== data) {
@@ -41,9 +40,7 @@ export const controllerUser = {
         userCpf,
         telefone,
         status})
-        // console.log('new user' , newUser)
-
-       
+        
         if(newUser){
             return res.status(200).json({success:true , user:newUser})
         }

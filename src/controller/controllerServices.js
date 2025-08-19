@@ -37,11 +37,11 @@ export const controllerService = {
       });
 
       if (newService) {
-        res.status(200).json({ success: true, service: newService });
+        return  res.status(200).json({ success: true, service: newService });
       }
     } catch (error) {
       console.error("Erro ao inserir service", error);
-      res.status(500).json({ message: "Erro server" });
+      return res.status(500).json({ message: "Erro server" });
     }
   },
 
@@ -56,11 +56,11 @@ export const controllerService = {
 
     const services = await Service.findAll({ where });
 
-    res.status(200).json({ service: services });
+    return res.status(200).json({ service: services });
 
   } catch (error) {
     console.error('Erro ao buscar serviços:', error);
-    res.status(500).json({ message: 'Erro ao buscar serviços' });
+     return res.status(500).json({ message: 'Erro ao buscar serviços' });
   }
 },
 
@@ -90,6 +90,10 @@ export const controllerService = {
   try {
     const { id } = req.params;
     const { name, descricao, duracao, price } = req.body;
+
+    if(!id){
+      return res.status(400).json({message:"Não foi passado nenhum ID"})
+    }
 
     const service = await Service.findByPk(id);
 

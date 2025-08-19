@@ -20,9 +20,17 @@ app.use((req, res, next) => {
 
 app.use(express.json())
 
+
+app.use(cors({
+  origin: "http://localhost:4200"
+}));
+
+
 app.use(router)
 
-connectToWhatsApp();
+  connectToWhatsApp()
+
+
 dataBase.sequelize.sync().then(()=>{
     console.log('banco Sicronizado')
 

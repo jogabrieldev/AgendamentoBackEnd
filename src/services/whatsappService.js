@@ -2,6 +2,8 @@ import { makeWASocket, DisconnectReason, useMultiFileAuthState } from '@whiskeys
 import qrcode from 'qrcode-terminal';
 const { v4: uuidv4 } = await import('uuid');
 import Client from '../models/client.js';
+import { normalizarTelefone } from '../utils/phone.js';
+
 
 let sock;
 
@@ -44,38 +46,47 @@ export async function connectToWhatsApp() {
     }
   });
 
+
+
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
 
   const msg = messages[0];
-  console.log("Mensagem")
+ 
   if (!msg.message || msg.key.fromMe) return;
 
-  const numeroDeTelefone = msg.key.remoteJid;
-  console.log('📩 Mensagem recebida de:', numeroDeTelefone);
+ 
+    const numeroDeTelefone = msg.key.remoteJid;
 
-  const telefone = numeroDeTelefone.replace('@s.whatsapp.net', ''); // remove o sufixo
-  let client = await Client.findOne({ where: { telefone } });
+    const telefone = normalizarTelefone(numeroDeTelefone)
 
-if (!client) {
-    // 👉 Se cliente não existe, cria com token novo
-    const tokenAcess = uuidv4();
-
-    client = await Client.create({
-      name: '',              // Nome vazio, ele vai cadastrar depois
-      telefone: telefone,
-      dataCadastro: new Date(),
-      idUser: 1,             // Ajuste: coloque o idUser dono do barbeiro (exemplo: 1)
-      tokenAcess: tokenAcess
-    });
-
-    console.log('🆕 Novo cliente criado:', client);
-  } else {
-    // 👉 Se cliente já existe, só atualiza o token
-    // client.tokenAcess = uuidv4();
-    // await client.save();
+ 
+  if (!telefone) {
+    console.log("⚠️ Mensagem veio de um grupo ou JID inválido:", numeroDeTelefone);
+    return;
   }
 
-  console.log('✅ Cliente encontrado:', client.name);
+
+  console.log('📩 Mensagem recebida de:', telefone);
+
+
+    let client = await Client.findOne({ where: { telefone:telefone} });
+ 
+    console.log('Cliente encontrado:', client);
+
+    if (!client) {
+      console.log('⚠️ Cliente não encontrado na base. Solicitando cadastro.');
+      
+      const tokenAcess = uuidv4();
+
+      const linkCadastro = `http://localhost:4200/cliente/cadastro/${tokenAcess}`;
+
+      await sock.sendMessage(numeroDeTelefone, {
+        text: `Olá! 👋 Não encontramos seu cadastro. Por favor, complete seus dados no link:\n${linkCadastro}`
+      });
+
+      return; // encerra aqui
+    }
+
 
   try { 
      const agendaLink = `http://localhost:4200/client/acesso/${client.tokenAcess}`;
