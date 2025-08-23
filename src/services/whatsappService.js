@@ -69,7 +69,7 @@ export async function connectToWhatsApp() {
   console.log('📩 Mensagem recebida de:', telefone);
 
 
-    let client = await Client.findOne({ where: { telefone:telefone} });
+    let client = await Client.findOne({ where: {telefone} });
  
     console.log('Cliente encontrado:', client);
 

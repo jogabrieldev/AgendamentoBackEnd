@@ -6,6 +6,7 @@ import { controllerClient } from '../controller/controllerClient.js'
 import { verifyToken } from '../middleware/authenticate.js'
 import { sendMessage } from '../services/whatsappService.js'
 import { login } from '../controller/controllerAuthenticate.js'
+import { controllerIndisponible } from '../controller/controllerIndisponible.js'
 import { getDisponibilidadeDoDia, createAppointment , getAppointments } from '../controller/controllerAppointment.js';
 const router = express.Router()
 
@@ -39,6 +40,16 @@ router.put('/api/disponi/:id' , (req ,res)=>{
 router.delete('/api/disponi/:id', (req ,res)=>{
    controllerAvailability.deleteAvailability(req ,res)
 })
+
+//Indisponibilidade
+router.post('/api/indispinible' , (req ,res)=>{
+   controllerIndisponible.registerHoursAndDateIndisponible(req ,res)
+})
+
+router.get('/api/indisponible/:idUser' , (req ,res)=>{
+   controllerIndisponible.getHoursAndDateIndisponible(req ,res)
+})
+
 
 // Service 
 router.post('/service' , (req , res)=>{

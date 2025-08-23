@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 
 const authenticate = async(telefone, senha)=> {
   // Buscar o usuário pelo telefone
-  const user = await User.findOne({ where: { telefone } });
+  const user = await User.findOne({ where: {telefone:telefone} });
 
   if (!user) {
     // Usuário não encontrado

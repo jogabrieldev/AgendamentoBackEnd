@@ -5,6 +5,7 @@ import Client from './client.js'
 import Service from './services.js'
 import Availability from './availability.js'
 import Appointment from './appointment.js'
+import indisponible from './indisponible.js'
 
 const database = {
     sequelize,
@@ -12,6 +13,7 @@ const database = {
     Service,
     Client,
     Availability,
-    Appointment
+    Appointment,
+    indisponible
 }
 export default database

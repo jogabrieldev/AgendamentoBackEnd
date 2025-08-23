@@ -18,16 +18,13 @@ export const controllerAvailability  = {
       
       const status = bodyStatus
 
-      const valoresValidos = ["Disponível", "Indisponivel" , "Agendado" , "Confirmado"];
+      const valoresValidos = ["Disponível", "Indisponível" , "Agendado" , "Confirmado"];
       if (!valoresValidos.includes(status)) {
        return res.status(402).json({
        message: "Valor de status é inválido",
        success: false
      });
     }
-
-
-
 
       const horarioExistente = await Availability.findOne({
       where: {
@@ -81,7 +78,7 @@ export const controllerAvailability  = {
 
     const status = bodyStatus
       
-      const valoresValidos = ["Disponível", "Indisponivel" , "Agendado" , "Confirmado"];
+      const valoresValidos = ["Disponível", "Indisponível" , "Agendado" , "Confirmado"];
       if (!valoresValidos.includes(status)) {
        return res.status(402).json({
        message: "Valor de status é inválido",
