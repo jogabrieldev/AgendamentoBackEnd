@@ -16,14 +16,9 @@ const Appointment = sequelize.define('appointment', {
     allowNull: false
   },
   horario: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.TIME,
     allowNull: false,
-    references:{
-       model:Availability,
-       key:'idDispo'
-    },
-    onDelete:'NO ACTION',
-    onUpdate:'NO ACTION'
+    
   },
   status: {
     type: DataTypes.STRING(20),

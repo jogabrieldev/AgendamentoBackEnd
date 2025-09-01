@@ -3,7 +3,7 @@ import sequelize from'../config/database.js';
 import User from './user.js';
 
 
-const indisponible = sequelize.define('availability', {
+const indisponible = sequelize.define('indisponible', {
   idIndis: {
     type: DataTypes.INTEGER,
     primaryKey: true,

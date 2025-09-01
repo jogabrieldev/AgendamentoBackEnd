@@ -10,15 +10,34 @@ import { Op } from 'sequelize';
 
 export async function getDisponibilidadeDoDia(req, res) {
   try {
-    const dataSelecionada = req.params.data; 
+    const dataSelecionada = req.params.data;
 
     if (!dataSelecionada) {
-      return res.status(400).json({ 
-        success: false, 
+      return res.status(400).json({
+        success: false,
         message: "É necessário passar uma data para buscar horários disponíveis."
       });
     }
 
+    const dataInput = new Date(dataSelecionada + "T00:00:00");
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0); 
+
+    if (isNaN(dataInput.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Data inválida. Use o formato YYYY-MM-DD."
+      });
+    }
+
+    if (dataInput < hoje) {
+      return res.status(400).json({
+        success: false,
+        message: "Não é permitido buscar disponibilidade para datas passadas."
+      });
+    }
+
+    // 1️⃣ Busca todos os horários base marcados como disponíveis
     const horariosBase = await Availability.findAll({
       where: { status: 'Disponível' },
       attributes: ['idDispo', 'horario'],
@@ -34,25 +53,20 @@ export async function getDisponibilidadeDoDia(req, res) {
       attributes: ['horario']
     });
 
-    
-    const agendadosSet = new Set(
-      agendados.map(a => a.horario.toString().substring(0,5))
-    );
+    const agendadosSet = new Set(agendados.map(a => a.horario.slice(0,5)));
 
-    
+    // 3️⃣ Busca horários marcados como indisponíveis naquele dia
     const indisponiveis = await indisponible.findAll({
       where: { dataIndisponivel: dataSelecionada },
       attributes: ['horario']
     });
 
-    const indisponiveisSet = new Set(
-      indisponiveis.map(i => i.horario.toString().substring(0,5))
-    );
+    const indisponiveisSet = new Set(indisponiveis.map(i => i.horario.slice(0,5)));
 
-  
+    // 4️⃣ Retorna apenas horários disponíveis
     const resultado = horariosBase
       .filter(h => {
-        const horarioStr = h.horario.toString().substring(0,5); // HH:mm
+        const horarioStr = h.horario.slice(0,5); // HH:mm
         return !agendadosSet.has(horarioStr) && !indisponiveisSet.has(horarioStr);
       })
       .map(h => ({
@@ -64,9 +78,9 @@ export async function getDisponibilidadeDoDia(req, res) {
 
   } catch (error) {
     console.error('Erro ao buscar horários do dia:', error);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Erro interno do servidor' 
+    return res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor'
     });
   }
 }
@@ -120,7 +134,7 @@ export async function createAppointment(req, res) {
       status: 'Agendado',
       idClient,
       idUser,
-      idServi,
+      idServi: Array.isArray(idServi) ? idServi : [idServi],
       preco,
       nota
     });
@@ -131,7 +145,9 @@ export async function createAppointment(req, res) {
 
     // Buscar cliente e serviço(s) para enviar mensagem
     const client = await Client.findByPk(idClient);
-    const services = await Service.findAll({ where: { idServi } });
+    const services = await Service.findAll({
+     where: { idServi: { [Op.in]: agendamento.idServi } }
+    });
 
     const nomeServicos = services.map(s => s.name).join(', ');
 

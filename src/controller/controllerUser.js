@@ -3,7 +3,6 @@ import bcrypt from 'bcrypt'
 
 export const controllerUser = {
 
-
   async registerUser(req , res){
      
     try {
@@ -50,29 +49,5 @@ export const controllerUser = {
     }
   },
 
-   async updateStatusUser(req, res) {
-    try {
-      const { id } = req.params; // ID do usuário pela URL
-      const { status } = req.body; // novo status enviado no corpo da requisição
-
-      if (!status) {
-        return res.status(400).json({ message: 'O campo status é obrigatório.' });
-      }
-
-      const user = await User.findByPk(id);
-
-      if (!user) {
-        return res.status(404).json({ message: 'Usuário não encontrado.' });
-      }
-
-      user.status = status;
-      await user.save(); // salva a alteração
-
-      return res.status(200).json({ message: 'Status atualizado com sucesso.', user });
-    } catch (error) {
-      console.error('Erro ao atualizar status:', error);
-      return res.status(500).json({ message: 'Erro ao atualizar status do usuário.' });
-    }
-  }
 }
 

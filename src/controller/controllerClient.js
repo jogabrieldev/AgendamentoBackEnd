@@ -21,13 +21,12 @@ export const controllerClient = {
 
        console.log(telefone)
      
-      // const validPhone = Client.findOne({where:{telefone: telefone}})
+      const validPhone = await Client.findOne({where:{telefone: telefone}})
       
-      // if(validPhone){
-      //   return res.status(422).json({message:"numero ja cadastrado no sistema"})
-      // }
+      if(validPhone){
+        return res.status(422).json({message:"numero ja cadastrado no sistema"})
+      }
 
-  
       const tokenAcess = token || uuidv4();
       if(!tokenAcess){
          return res.status(400).json({message:"Erro para gerar token do cliente!"})

@@ -14,7 +14,7 @@ export const controllerIndisponible = {
         }
 
         const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0); // zera horas para comparar só data
+        hoje.setHours(0, 0, 0, 0); 
        const dataReq = new Date(dataIndisponivel);
 
         if (dataReq < hoje) {

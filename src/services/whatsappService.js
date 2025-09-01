@@ -21,20 +21,16 @@ export async function connectToWhatsApp() {
     const { qr, connection, lastDisconnect } = update;
 
     if (qr && connection !== 'open') {
-      console.log('🔐 Escaneie o QR Code abaixo para se conectar:');
       qrcode.generate(qr, { small: true });
     }
 
     if (connection === 'open') {
       console.log('📱 Conectado ao WhatsApp');
-     
     }
 
     if (connection === 'close') {
       const statusCode = lastDisconnect?.error?.output?.statusCode;
       const reason = DisconnectReason[statusCode] || 'unknown';
-
-      console.log(`Conexão encerrada, motivo: ${reason}`);
 
 
       if (statusCode !== DisconnectReason.loggedOut) {
@@ -69,7 +65,7 @@ export async function connectToWhatsApp() {
   console.log('📩 Mensagem recebida de:', telefone);
 
 
-    let client = await Client.findOne({ where: {telefone} });
+    let client = await Client.findOne({ where: {telefone:telefone.trim()} });
  
     console.log('Cliente encontrado:', client);
 
@@ -81,7 +77,7 @@ export async function connectToWhatsApp() {
       const linkCadastro = `http://localhost:4200/cliente/cadastro/${tokenAcess}`;
 
       await sock.sendMessage(numeroDeTelefone, {
-        text: `Olá! 👋 Não encontramos seu cadastro. Por favor, complete seus dados no link:\n${linkCadastro}`
+        text: `Olá! 👋 Não encontramos seu cadastro no sistema. Por favor, clique no LINK e va ate a pagina de cadastro faça seu cadastro e agende seu horario:\n${linkCadastro}`
       });
 
       return; // encerra aqui
@@ -92,7 +88,7 @@ export async function connectToWhatsApp() {
      const agendaLink = `http://localhost:4200/client/acesso/${client.tokenAcess}`;
 
   await sock.sendMessage(numeroDeTelefone, {
-    text: `Olá, ${client.name}! 👋\nClique no link abaixo para agendar seu horário:\n${agendaLink}`
+    text: `Olá, ${client.name}! 👋\n Obrigado por retorna clique no link abaixo para agendar seu horário:\n${agendaLink}`
   });
 
   console.log(`✅ Link de agendamento enviado para ${telefone}`);
@@ -101,7 +97,6 @@ export async function connectToWhatsApp() {
     console.error('Erro ao ennviar')
   }
 
- 
 });
 
   return sock;

@@ -19,10 +19,6 @@ router.post('/authenticate' ,(req ,res)=>{
     login(req ,res)
 })
 
-router.put('/user' , (req , res)=>{
-  controllerUser.updateStatusUser(req , res)
-})
-
 //Disponnibilidade
 
 router.post('/api/disponi' , (req , res)=>{

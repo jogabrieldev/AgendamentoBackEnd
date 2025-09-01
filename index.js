@@ -2,7 +2,7 @@ import express from 'express'
 import dataBase  from './src/models/initModels.js'
 import './src/models/associations.js'
 import router from './src/routes/routes.js'
-import { connectToWhatsApp } from './src/services/whatsappService.js'
+// import { connectToWhatsApp } from './src/services/whatsappService.js'
 import cors from 'cors'
 
 const app = express()
@@ -28,15 +28,21 @@ app.use(cors({
 
 app.use(router)
 
-  connectToWhatsApp()
+  // connectToWhatsApp()
 
 
-dataBase.sequelize.sync().then(()=>{
-    console.log('banco Sicronizado')
-
-    app.listen(3000,()=>{
-    console.log('Server road port 3000')
-    
-})
-})
+dataBase.sequelize.authenticate()
+  .then(() => {
+    console.log("✅ Conexão com o banco estabelecida com sucesso!");
+    return dataBase.sequelize.sync(); // Sincroniza models
+  })
+  .then(() => {
+    console.log("📦 Banco sincronizado");
+    app.listen(3000, () => {
+      console.log("🚀 Server rodando na porta 3000");
+    });
+  })
+  .catch((error) => {
+    console.error("❌ Erro ao conectar com o banco:", error);
+  });
 
