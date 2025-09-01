@@ -4,6 +4,11 @@ const { v4: uuidv4 } = await import('uuid');
 import Client from '../models/client.js';
 import { normalizarTelefone } from '../utils/phone.js';
 
+const FRONT_URL =
+  process.env.NODE_ENV === "production"
+    ? process.env.FRONT_URL_PROD
+    : process.env.FRONT_URL_LOCAL;
+
 
 let sock;
 
@@ -74,7 +79,7 @@ export async function connectToWhatsApp() {
       
       const tokenAcess = uuidv4();
 
-      const linkCadastro = `http://localhost:4200/cliente/cadastro/${tokenAcess}`;
+       const linkCadastro = `${FRONT_URL}/cliente/cadastro/${tokenAcess}`;
 
       await sock.sendMessage(numeroDeTelefone, {
         text: `Olá! 👋 Não encontramos seu cadastro no sistema. Por favor, clique no LINK e va ate a pagina de cadastro faça seu cadastro e agende seu horario:\n${linkCadastro}`
@@ -85,7 +90,7 @@ export async function connectToWhatsApp() {
 
 
   try { 
-     const agendaLink = `http://localhost:4200/client/acesso/${client.tokenAcess}`;
+    const agendaLink = `${FRONT_URL}/client/acesso/${client.tokenAcess}`;
 
   await sock.sendMessage(numeroDeTelefone, {
     text: `Olá, ${client.name}! 👋\n Obrigado por retorna clique no link abaixo para agendar seu horário:\n${agendaLink}`
