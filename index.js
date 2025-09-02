@@ -36,13 +36,21 @@ app.use(router)
 dataBase.sequelize.authenticate()
   .then(() => {
     console.log("✅ Conexão com o banco estabelecida com sucesso!");
-    return dataBase.sequelize.sync(); 
+    return dataBase.sequelize.sync({alter:true}); 
   })
   .then(() => {
     console.log("📦 Banco sincronizado");
+    const PORT = process.env.PORT || 3000; // Railway fornece a porta via env
+    app.listen(PORT, () => {
+      console.log(`🚀 Server rodando na porta ${PORT}`);
+    });
   })
   .catch((error) => {
     console.error("❌ Erro ao conectar com o banco:", error);
   });
+  
+  // app.listen(3000,()=>{
+  //   console.log('Server running on port 3000')
+  // })
 
-export default app;
+

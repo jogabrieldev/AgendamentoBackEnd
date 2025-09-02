@@ -1,23 +1,36 @@
 import dotenv from "dotenv";
-dotenv.config();
 import { Sequelize } from "sequelize";
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME || process.env.PGDATABASE, // local usa DB_NAME, prod usa PGDATABASE
-  process.env.DB_USER || process.env.PGUSER,     // local usa DB_USER, prod usa PGUSER
-  process.env.DB_PASSWORD || process.env.PGPASSWORD,
-  {
-    host: process.env.DB_HOST || process.env.PGHOST,
-    port: process.env.DB_PORT || process.env.PGPORT || 5432,
+dotenv.config();
+
+let sequelize;
+
+if (process.env.URL_DO_BANCO_DE_DADOS) {
+  // 🚀 Produção (Railway) usando a URL completa
+  sequelize = new Sequelize(process.env.URL_DO_BANCO_DE_DADOS, {
     dialect: "postgres",
-    dialectOptions: {
-      ssl: process.env.NODE_ENV === "production" ? {
-        require: true,
-        rejectUnauthorized: false
-      } : false
-    },
     logging: false,
-  }
-);
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false, // Railway exige SSL
+      },
+    },
+  });
+} else {
+  // 💻 Desenvolvimento (local)
+  sequelize = new Sequelize(
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASSWORD,
+    {
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT || 5432,
+      dialect: "postgres",
+      logging: false,
+    }
+  );
+}
 
 export default sequelize;
+
