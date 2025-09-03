@@ -30,7 +30,10 @@ export async function connectToWhatsApp() {
 
     if (qr && connection !== 'open') {
       console.clear(); // limpa o terminal antes de mostrar o QR
-      qrcode.generate(qr, { small: true }); // QR pequeno e legível
+     qrcode.generate(qr, { small: true }, (qrcodeText) => {
+    console.log('\n📱 Escaneie este QR Code para conectar ao WhatsApp:\n');
+  console.log(qrcodeText);
+});
     }
 
     if (connection === 'open') {
