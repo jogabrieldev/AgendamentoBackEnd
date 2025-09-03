@@ -35,20 +35,21 @@ app.use(router)
 const PORT = process.env.PORT || 3000;
 
 
-dataBase.sequelize.authenticate()
-  .then(() => {
-    console.log("✅ Conexão com o banco estabelecida com sucesso!");
-    return dataBase.sequelize.sync({alter:true}); 
-  })
-  .then(() => {
-    console.log("📦 Banco sincronizado");
-
-    app.listen(PORT,"0.0.0.0", () => {
-      console.log(`🚀 Server rodando na porta ${PORT}`);
+const connectWithRetry = () => {
+  sequelize.authenticate()
+    .then(() => {
+      console.log('✅ Conectado ao banco');
+      // continue com o resto da aplicação
+    })
+    .catch(err => {
+      console.error('❌ Tentando reconectar...', err.message);
+      setTimeout(connectWithRetry, 5000); // tenta novamente em 5 segundos
     });
-  })
-  .catch((error) => {
-    console.error("❌ Erro ao conectar com o banco:", error);
-  });
-  
+};
+
+connectWithRetry();
+
+app.listen(PORT , "0.0.0.0", ()=>{
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+})
  
