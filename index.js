@@ -7,30 +7,32 @@ import cors from 'cors'
 
 const app = express()
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:4200");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Credentials", "true");
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(204);
-  }
-  next();
-});
-
-app.use(express.json())
-
-
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "http://localhost:4200");
+//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+//   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+//   res.header("Access-Control-Allow-Credentials", "true");
+//   if (req.method === 'OPTIONS') {
+//     return res.sendStatus(204);
+//   }
+//   next();
+// });
 app.use(cors({
-  // origin: "http://localhost:4200",
   origin:["https://agendamento-vert.vercel.app/login"],
   methods: ["GET", "POST", "PUT", "DELETE"],
 }));
 
+app.use(express.json())
 
 app.use(router)
 
-  connectToWhatsApp()
+try {
+  connectToWhatsApp();
+} catch (err) {
+  console.error("❌ Erro ao conectar ao WhatsApp:", err);
+}
+
+const PORT = process.env.PORT || 3000;
 
 
 dataBase.sequelize.authenticate()
@@ -40,7 +42,7 @@ dataBase.sequelize.authenticate()
   })
   .then(() => {
     console.log("📦 Banco sincronizado");
-    const PORT = process.env.PORT || 3000; // Railway fornece a porta via env
+
     app.listen(PORT,"0.0.0.0", () => {
       console.log(`🚀 Server rodando na porta ${PORT}`);
     });
@@ -49,8 +51,4 @@ dataBase.sequelize.authenticate()
     console.error("❌ Erro ao conectar com o banco:", error);
   });
   
-  // app.listen(3000,()=>{
-  //   console.log('Server running on port 3000')
-  // })
-
-
+ 
