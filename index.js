@@ -2,7 +2,7 @@ import express from 'express'
 import dataBase  from './src/models/initModels.js'
 import './src/models/associations.js'
 import router from './src/routes/routes.js'
-// import { connectToWhatsApp } from './src/services/whatsappService.js'
+import { connectToWhatsApp } from './src/services/whatsappService.js'
 import cors from 'cors'
 
 const app = express()
@@ -28,11 +28,11 @@ app.use(express.json())
 
 app.use(router)
 
-// try {
-//   connectToWhatsApp();
-// } catch (err) {
-//   console.error("❌ Erro ao conectar ao WhatsApp:", err);
-// }
+try {
+  connectToWhatsApp();
+} catch (err) {
+  console.error("❌ Erro ao conectar ao WhatsApp:", err);
+}
 
 const PORT = process.env.PORT || 3000;
 
@@ -41,7 +41,6 @@ const connectWithRetry = () => {
    dataBase.sequelize.authenticate()
     .then(() => {
       console.log('✅ Conectado ao banco');
-      // continue com o resto da aplicação
     })
     .catch(err => {
       console.error('❌ Tentando reconectar...', err.message);

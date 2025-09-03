@@ -2,9 +2,6 @@ import dotenv from "dotenv";
 dotenv.config();
 import { Sequelize } from "sequelize";
 
-
-
-console.log('🔍 URL_DO_BANCO_DE_DADOS:', process.env.URL_DO_BANCO_DE_DADOS);
 let sequelize;
 
 if (process.env.URL_DO_BANCO_DE_DADOS) {
