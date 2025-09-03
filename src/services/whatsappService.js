@@ -11,6 +11,7 @@ const FRONT_URL =
 
 
 let sock;
+let isReconnecting = false;
 
 export async function connectToWhatsApp() {
   const { state, saveCreds } = await useMultiFileAuthState('auth');
@@ -22,27 +23,34 @@ export async function connectToWhatsApp() {
 
   sock.ev.on('creds.update', saveCreds);
 
+ sock.ev.on('creds.update', saveCreds);
+
   sock.ev.on('connection.update', (update) => {
     const { qr, connection, lastDisconnect } = update;
 
     if (qr && connection !== 'open') {
-      qrcode.generate(qr, { small: true });
+      console.clear(); // limpa o terminal antes de mostrar o QR
+      qrcode.generate(qr, { small: true }); // QR pequeno e legível
     }
 
     if (connection === 'open') {
       console.log('📱 Conectado ao WhatsApp');
+      isReconnecting = false;
     }
 
-    if (connection === 'close') {
+    if (connection === 'close' && !isReconnecting) {
+      isReconnecting = true;
       const statusCode = lastDisconnect?.error?.output?.statusCode;
       const reason = DisconnectReason[statusCode] || 'unknown';
 
-
       if (statusCode !== DisconnectReason.loggedOut) {
         console.log('Reconectando...');
-        connectToWhatsApp();
+        connectToWhatsApp().finally(() => {
+          isReconnecting = false;
+        });
       } else {
         console.log('Logout detectado, remova os arquivos de sessão para reautenticar.');
+        isReconnecting = false;
       }
     }
   });
