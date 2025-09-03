@@ -10,6 +10,12 @@ import { controllerIndisponible } from '../controller/controllerIndisponible.js'
 import { getDisponibilidadeDoDia, createAppointment , getAppointments } from '../controller/controllerAppointment.js';
 const router = express.Router()
 
+
+// teste pra rota
+router.get('/', (req, res) => {
+  res.send('🚀 API Agendamento está rodando!');
+});
+
 //user
 router.post('/user' , (req ,res)=>{
     controllerUser.registerUser(req ,res)

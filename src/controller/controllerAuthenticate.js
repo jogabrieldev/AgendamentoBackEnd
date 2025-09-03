@@ -7,6 +7,8 @@ const jwt = jsonWebToken
 export const login = async (req, res) => {
   const { phoneUser, senha } = req.body;
 
+  console.log('Tentativa de login com telefone:', phoneUser);
+
   if (!phoneUser || !senha) {
     return res.status(400).json({ error: 'Telefone e senha são obrigatórios' });
   }
