@@ -36,7 +36,7 @@ const PORT = process.env.PORT || 3000;
 
 
 const connectWithRetry = () => {
-  sequelize.authenticate()
+   dataBase.sequelize.authenticate()
     .then(() => {
       console.log('✅ Conectado ao banco');
       // continue com o resto da aplicação
@@ -49,7 +49,10 @@ const connectWithRetry = () => {
 
 connectWithRetry();
 
-app.listen(PORT , "0.0.0.0", ()=>{
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
 })
+
+
+  // dataBase.sequelize.authenticate()
  
