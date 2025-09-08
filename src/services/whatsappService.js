@@ -28,13 +28,12 @@ export async function connectToWhatsApp() {
   sock.ev.on('connection.update', (update) => {
     const { qr, connection, lastDisconnect } = update;
 
-    if (qr && connection !== 'open') {
-      console.clear(); // limpa o terminal antes de mostrar o QR
-     qrcode.generate(qr, { small: true }, (qrcodeText) => {
-    console.log('\n📱 Escaneie este QR Code para conectar ao WhatsApp:\n');
-  console.log(qrcodeText);
-});
-    }
+   if (qr && connection !== 'open') {
+  console.clear();
+  console.log('\n📱 Escaneie este QR Code usando um gerador online:');
+  console.log(`🔗 Conteúdo do QR: ${qr}`);
+  console.log('👉 Acesse https://www.qr-code-generator.com e cole o conteúdo acima para gerar o QR visual.');
+}
 
     if (connection === 'open') {
       console.log('📱 Conectado ao WhatsApp');
