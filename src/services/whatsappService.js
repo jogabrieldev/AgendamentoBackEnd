@@ -1,9 +1,10 @@
-import { makeWASocket, DisconnectReason, useMultiFileAuthState } from '@whiskeysockets/baileys';
+import { makeWASocket, DisconnectReason, useSingleFileAuthState } from '@whiskeysockets/baileys';
 import qrcode from 'qrcode-terminal';
 const { v4: uuidv4 } = await import('uuid');
 import Client from '../models/client.js';
 import { normalizarTelefone } from '../utils/phone.js';
-import QRCode from 'qrcode';
+import  "../"
+
 
 const FRONT_URL =
   process.env.NODE_ENV === "production"
@@ -11,31 +12,38 @@ const FRONT_URL =
     : process.env.FRONT_URL_LOCAL;
 
 
+    const AUTH_FILE = './auth_info.json';
+const { state, saveState } = useSingleFileAuthState(AUTH_FILE); 
+
 let sock;
 let isReconnecting = false;
 
 export async function connectToWhatsApp() {
-  const { state, saveCreds } = await useMultiFileAuthState('auth');
+  // const { state, saveCreds } = await useMultiFileAuthState('auth');
 
   sock = makeWASocket({
     auth: state,
-   
+    printQRInTerminal: false
   });
 
-  sock.ev.on('creds.update', saveCreds);
+    let qrImpressa = false;
 
- sock.ev.on('creds.update', saveCreds);
+//   sock.ev.on('creds.update', saveCreds);
+
+//  sock.ev.on('creds.update', saveCreds);
 
   sock.ev.on('connection.update', (update) => {
     const { qr, connection, lastDisconnect } = update;
 
-    if (qr && connection !== 'open') {
+    if (qr && connection !== 'open' && qrImpressa) {
     console.clear();
     console.log('📱 Escaneie este QR Code com o WhatsApp:');
     qrcode.generate(qr, { small: true, errorCorrectionLevel: 'L' });
+    qrImpressa = true 
   }
     if (connection === 'open') {
       console.log('📱 Conectado ao WhatsApp');
+        qrImpressa = false;
       isReconnecting = false;
     }
 
