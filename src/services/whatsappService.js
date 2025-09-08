@@ -26,7 +26,7 @@ export async function connectToWhatsApp() {
 
     let qrImpressa = false;
 
-//   sock.ev.on('creds.update', saveCreds);
+  sock.ev.on('creds.update', saveState);
 
 //  sock.ev.on('creds.update', saveCreds);
 
