@@ -3,8 +3,6 @@ import qrcode from 'qrcode-terminal';
 const { v4: uuidv4 } = await import('uuid');
 import Client from '../models/client.js';
 import { normalizarTelefone } from '../utils/phone.js';
-import  "../"
-
 
 const FRONT_URL =
   process.env.NODE_ENV === "production"
