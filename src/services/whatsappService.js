@@ -1,4 +1,7 @@
-import { makeWASocket, DisconnectReason, useSingleFileAuthState } from '@whiskeysockets/baileys';
+import pkg from '@whiskeysockets/baileys';
+const { makeWASocket, DisconnectReason, useSingleFileAuthState } = pkg;
+
+// import { makeWASocket, DisconnectReason, useSingleFileAuthState } from '@whiskeysockets/baileys';
 import qrcode from 'qrcode-terminal';
 const { v4: uuidv4 } = await import('uuid');
 import Client from '../models/client.js';
