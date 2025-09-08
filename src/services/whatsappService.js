@@ -3,6 +3,7 @@ import qrcode from 'qrcode-terminal';
 const { v4: uuidv4 } = await import('uuid');
 import Client from '../models/client.js';
 import { normalizarTelefone } from '../utils/phone.js';
+import QRCode from 'qrcode';
 
 const FRONT_URL =
   process.env.NODE_ENV === "production"
@@ -28,13 +29,11 @@ export async function connectToWhatsApp() {
   sock.ev.on('connection.update', (update) => {
     const { qr, connection, lastDisconnect } = update;
 
-   if (qr && connection !== 'open') {
-  console.clear();
-  console.log('\n📱 Escaneie este QR Code usando um gerador online:');
-  console.log(`🔗 Conteúdo do QR: ${qr}`);
-  console.log('👉 Acesse https://www.qr-code-generator.com e cole o conteúdo acima para gerar o QR visual.');
-}
-
+    if (qr && connection !== 'open') {
+    console.clear();
+    console.log('📱 Escaneie este QR Code com o WhatsApp:');
+    qrcode.generate(qr, { small: true, errorCorrectionLevel: 'L' });
+  }
     if (connection === 'open') {
       console.log('📱 Conectado ao WhatsApp');
       isReconnecting = false;
