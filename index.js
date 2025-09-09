@@ -39,7 +39,7 @@ const PORT = process.env.PORT || 3000;
 
 
 const connectWithRetry = () => {
-   dataBase.sequelize.authenticate({force:true})
+   dataBase.sequelize.authenticate()
     .then(() => {
       console.log('✅ Conectado ao banco');
     })

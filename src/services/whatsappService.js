@@ -37,8 +37,7 @@ export async function connectToWhatsApp() {
         if (err) return console.error(err);
         currentQR = qr;
         qrImpressa = true;
-        console.log('📱 Abra no navegador e escaneie este QR:');
-        console.log(url); // enviar para frontend via rota
+        
       });
     }
 
@@ -89,7 +88,6 @@ export async function connectToWhatsApp() {
 
     let client = await Client.findOne({ where: {telefone:telefone.trim()} });
  
-    console.log('Cliente encontrado:', client);
 
     if (!client) {
       console.log('⚠️ Cliente não encontrado na base. Solicitando cadastro.');
@@ -113,7 +111,6 @@ export async function connectToWhatsApp() {
     text: `Olá, ${client.name}! 👋\n Obrigado por retorna clique no link abaixo para agendar seu horário:\n${agendaLink}`
   });
 
-  console.log(`✅ Link de agendamento enviado para ${telefone}`);
     
   } catch (error) {
     console.error('Erro ao ennviar')

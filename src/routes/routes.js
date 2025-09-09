@@ -35,46 +35,46 @@ router.post('/authenticate' ,(req ,res)=>{
 
 //Disponnibilidade
 
-router.post('/api/disponi' , (req , res)=>{
+router.post('/api/disponi' , verifyToken, (req , res)=>{
    controllerAvailability.registerAvailability(req ,res)
 });
 
-router.get('/api/disponi', (req , res)=>{
+router.get('/api/disponi', verifyToken, (req , res)=>{
     controllerAvailability.getAllAvailabillity(req ,res)
 });
 
-router.put('/api/disponi/:id' , (req ,res)=>{
+router.put('/api/disponi/:id' , verifyToken, (req ,res)=>{
    controllerAvailability.updateAvailabilityStatus(req ,res)
 });
 
-router.delete('/api/disponi/:id', (req ,res)=>{
+router.delete('/api/disponi/:id', verifyToken, (req ,res)=>{
    controllerAvailability.deleteAvailability(req ,res)
 })
 
 //Indisponibilidade
-router.post('/api/indispinible' , (req ,res)=>{
+router.post('/api/indispinible' , verifyToken, (req ,res)=>{
    controllerIndisponible.registerHoursAndDateIndisponible(req ,res)
 })
 
-router.get('/api/indisponible/:idUser' , (req ,res)=>{
+router.get('/api/indisponible/:idUser' , verifyToken, (req ,res)=>{
    controllerIndisponible.getHoursAndDateIndisponible(req ,res)
 })
 
 
 // Service 
-router.post('/service' , (req , res)=>{
+router.post('/service' , verifyToken, (req , res)=>{
    controllerService.registerService(req , res)
 });
 
-router.get('/api/service' , (req ,res)=>{
+router.get('/api/service' , verifyToken, (req ,res)=>{
    controllerService.getAllServices(req ,res)
 });
 
-router.put('/api/service/:id' , (req ,res)=>{
+router.put('/api/service/:id' , verifyToken, (req ,res)=>{
   controllerService.updateService(req ,res)
 })
 
-router.delete('/api/service/:id', (req , res )=>{
+router.delete('/api/service/:id', verifyToken, (req , res )=>{
    controllerService.deleteService(req ,res)
 });
 

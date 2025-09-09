@@ -25,6 +25,17 @@ export const controllerAvailability  = {
        success: false
      });
     }
+   
+    const horariosValidos = ["07:00" , "08:00" , 
+      "09:00" , "10:00" , "11:00" , "12:00" ,
+       "13:00" , "14:00" , "15:00" , 
+      "16:00" , "17:00", "18:00" , "19:00" , 
+      "20:00" , "21:00"]
+      
+      const horarioLimpo = horario.trim()
+      if(!horariosValidos.includes(horarioLimpo)){
+         return res.status(402).json({message:"Valor passado como horario não e valido" , success:false})
+      }
 
       const horarioExistente = await Availability.findOne({
       where: {

@@ -5,7 +5,6 @@ export const controllerService = {
   async registerService(req, res) {
     const { name, descricao, duracao, price, idUser } = req.body;
 
-    // console.log("corpo service", req.body);
     try {
       if (!name || !duracao || !price || !idUser) {
         res

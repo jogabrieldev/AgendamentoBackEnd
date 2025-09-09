@@ -19,7 +19,6 @@ export const controllerClient = {
 
        const telefone = normalizarTelefone(phone);
 
-       console.log(telefone)
      
       const validPhone = await Client.findOne({where:{telefone: telefone}})
       

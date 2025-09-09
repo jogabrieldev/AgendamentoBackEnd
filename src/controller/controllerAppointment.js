@@ -37,14 +37,14 @@ export async function getDisponibilidadeDoDia(req, res) {
       });
     }
 
-    // 1️⃣ Busca todos os horários base marcados como disponíveis
+
     const horariosBase = await Availability.findAll({
       where: { status: 'Disponível' },
       attributes: ['idDispo', 'horario'],
       order: [['horario', 'ASC']]
     });
 
-    // 2️⃣ Busca horários já agendados naquele dia
+ 
     const agendados = await Appointment.findAll({
       where: {
         data: dataSelecionada,
@@ -55,7 +55,7 @@ export async function getDisponibilidadeDoDia(req, res) {
 
     const agendadosSet = new Set(agendados.map(a => a.horario.slice(0,5)));
 
-    // 3️⃣ Busca horários marcados como indisponíveis naquele dia
+ 
     const indisponiveis = await indisponible.findAll({
       where: { dataIndisponivel: dataSelecionada },
       attributes: ['horario']
@@ -63,7 +63,7 @@ export async function getDisponibilidadeDoDia(req, res) {
 
     const indisponiveisSet = new Set(indisponiveis.map(i => i.horario.slice(0,5)));
 
-    // 4️⃣ Retorna apenas horários disponíveis
+
     const resultado = horariosBase
       .filter(h => {
         const horarioStr = h.horario.slice(0,5); // HH:mm
@@ -90,15 +90,15 @@ export async function getDisponibilidadeDoDia(req, res) {
 export async function getAppointments(req, res) {
   try {
     const agendados = await Appointment.findAll({
-      where: { status: 'Agendado' }, // ou o status que você usa
+      where: { status: 'Agendado' }, 
       include: [
         {
           model: Client,
-          attributes: ['name'] // campos que você precisa
+          attributes: ['name']
         }
       ],
-      order: [['data', 'DESC']], // ordena do mais recente para o mais antigo
-      limit: 10 // se quiser limitar os últimos 10
+      order: [['data', 'DESC']], 
+      limit: 10 
     });
 
     return res.status(200).json({message:" Sucesso em buscar agendamentos" ,success:true ,  agendados:agendados});
@@ -114,7 +114,7 @@ export async function createAppointment(req, res) {
   try {
     const { data, horario, idClient, idUser, idServi, preco, nota } = req.body;
 
-    // Verificar se o horário está livre
+  
     const existe = await Appointment.findOne({
       where: {
         data,
@@ -127,7 +127,7 @@ export async function createAppointment(req, res) {
       return res.status(400).json({ error: 'Horário já está reservado para esta data.' });
     }
 
-    // Criar o agendamento
+   
     const agendamento = await Appointment.create({
       data,
       horario,
@@ -143,7 +143,7 @@ export async function createAppointment(req, res) {
       return res.status(500).json({ error: 'Erro ao criar agendamento' });
     }
 
-    // Buscar cliente e serviço(s) para enviar mensagem
+   
     const client = await Client.findByPk(idClient);
     const services = await Service.findAll({
      where: { idServi: { [Op.in]: agendamento.idServi } }
