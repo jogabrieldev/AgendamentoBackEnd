@@ -111,10 +111,10 @@ export const controllerAvailability  = {
  const  {id}  = req.params;
 
     try {
-      const hoursDisponivel = await Availability.findByPk(id);
+      const hoursDisponivel = await Availability.findOne({ where: { idDispo: id } });
 
       if (!hoursDisponivel) {
-        return res.status(404).json({ message: "Serviço não encontrado" });
+        return res.status(404).json({ message: "horario não encontrado" });
       }
 
       await hoursDisponivel.destroy();

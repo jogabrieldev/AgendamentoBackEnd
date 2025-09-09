@@ -7,8 +7,6 @@ export const controllerIndisponible = {
       try {
         const {status , horario , dataIndisponivel ,idUser } = req.body
 
-        console.log(req.body)
-
         if(!horario || !dataIndisponivel || !idUser){
         return res.status(400).json({message:"Não foi passado todos os dados necessarios" , success:false})
         }
