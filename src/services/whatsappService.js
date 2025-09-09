@@ -4,30 +4,60 @@ const { v4: uuidv4 } = await import('uuid');
 import Client from '../models/client.js';
 import { normalizarTelefone } from '../utils/phone.js';
 import QRCode from 'qrcode';
-
+import { Sequelize, DataTypes } from 'sequelize';
+import sequelize from '../models/initModels.js'; // ajusta para seu init real
 
 const FRONT_URL =
   process.env.NODE_ENV === "production"
     ? process.env.FRONT_URL_PROD
     : process.env.FRONT_URL_LOCAL;
 
-
 let sock;
 let isReconnecting = false;
+let currentQR = "";
 
-let currentQR = ""
+// 🔹 Modelo para salvar a sessão
+const WhatsAppSession = sequelize.define("WhatsAppSession", {
+  id: {
+    type: DataTypes.STRING,
+    primaryKey: true,
+  },
+  data: {
+    type: DataTypes.JSONB,
+    allowNull: false,
+  },
+}, {
+  tableName: "whatsapp_sessions",
+  timestamps: false,
+});
+
+// garante que a tabela exista
+await WhatsAppSession.sync();
 
 export async function connectToWhatsApp() {
-  const { state, saveCreds } = await useMultiFileAuthState('auth');
+  // 🔹 Função customizada de storage
+  const { state, saveCreds } = await (async () => {
+    let session = await WhatsAppSession.findByPk("default");
+    let creds = session ? session.data : {};
+
+    return {
+      state: creds,
+      saveCreds: async (updatedCreds) => {
+        await WhatsAppSession.upsert({
+          id: "default",
+          data: updatedCreds,
+        });
+      }
+    };
+  })();
 
   sock = makeWASocket({
     auth: state,
-   
   });
 
   sock.ev.on('creds.update', saveCreds);
-  
-   let qrImpressa = false;
+
+  let qrImpressa = false;
 
   sock.ev.on('connection.update', (update) => {
     const { qr, connection, lastDisconnect } = update;
@@ -37,7 +67,6 @@ export async function connectToWhatsApp() {
         if (err) return console.error(err);
         currentQR = qr;
         qrImpressa = true;
-        
       });
     }
 
@@ -57,66 +86,49 @@ export async function connectToWhatsApp() {
           isReconnecting = false;
         });
       } else {
-        console.log('Logout detectado, remova os arquivos de sessão para reautenticar.');
+        console.log('Logout detectado, limpe sessão no banco para reautenticar.');
         isReconnecting = false;
       }
     }
   });
 
-
-
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
+    const msg = messages[0];
+    if (!msg.message || msg.key.fromMe) return;
 
-  const msg = messages[0];
- 
-  if (!msg.message || msg.key.fromMe) return;
-
- 
     const numeroDeTelefone = msg.key.remoteJid;
+    const telefone = normalizarTelefone(numeroDeTelefone);
 
-    const telefone = normalizarTelefone(numeroDeTelefone)
+    if (!telefone) {
+      console.log("⚠️ Mensagem veio de um grupo ou JID inválido:", numeroDeTelefone);
+      return;
+    }
 
- 
-  if (!telefone) {
-    console.log("⚠️ Mensagem veio de um grupo ou JID inválido:", numeroDeTelefone);
-    return;
-  }
+    console.log('📩 Mensagem recebida de:', telefone);
 
-
-  console.log('📩 Mensagem recebida de:', telefone);
-
-
-    let client = await Client.findOne({ where: {telefone:telefone.trim()} });
- 
+    let client = await Client.findOne({ where: { telefone: telefone.trim() } });
 
     if (!client) {
       console.log('⚠️ Cliente não encontrado na base. Solicitando cadastro.');
-      
       const tokenAcess = uuidv4();
-
-       const linkCadastro = `${FRONT_URL}/cliente/cadastro/${tokenAcess}`;
+      const linkCadastro = `${FRONT_URL}/cliente/cadastro/${tokenAcess}`;
 
       await sock.sendMessage(numeroDeTelefone, {
-        text: `Olá! 👋 Não encontramos seu cadastro no sistema. Por favor, clique no LINK e va ate a pagina de cadastro faça seu cadastro e agende seu horario:\n${linkCadastro}`
+        text: `Olá! 👋 Não encontramos seu cadastro no sistema. Por favor, clique no LINK e faça seu cadastro:\n${linkCadastro}`
       });
 
-      return; // encerra aqui
+      return;
     }
 
-
-  try { 
-    const agendaLink = `${FRONT_URL}/client/acesso/${client.tokenAcess}`;
-
-  await sock.sendMessage(numeroDeTelefone, {
-    text: `Olá, ${client.name}! 👋\n Obrigado por retorna clique no link abaixo para agendar seu horário:\n${agendaLink}`
+    try {
+      const agendaLink = `${FRONT_URL}/client/acesso/${client.tokenAcess}`;
+      await sock.sendMessage(numeroDeTelefone, {
+        text: `Olá, ${client.name}! 👋\n Clique no link abaixo para agendar seu horário:\n${agendaLink}`
+      });
+    } catch (error) {
+      console.error('Erro ao enviar');
+    }
   });
-
-    
-  } catch (error) {
-    console.error('Erro ao ennviar')
-  }
-
-});
 
   return sock;
 }
