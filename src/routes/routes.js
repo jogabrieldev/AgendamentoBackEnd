@@ -1,13 +1,15 @@
 import express from 'express'
+import QRCode from 'qrcode'
 import { controllerUser } from '../controller/controllerUser.js'
 import { controllerAvailability } from '../controller/controllerAvailabillity.js'
 import { controllerService } from '../controller/controllerServices.js'
 import { controllerClient } from '../controller/controllerClient.js'
 import { verifyToken } from '../middleware/authenticate.js'
-import { sendMessage } from '../services/whatsappService.js'
+import { getCurrentQR  } from '../services/whatsappService.js'
 import { login } from '../controller/controllerAuthenticate.js'
 import { controllerIndisponible } from '../controller/controllerIndisponible.js'
 import { getDisponibilidadeDoDia, createAppointment , getAppointments } from '../controller/controllerAppointment.js';
+
 const router = express.Router()
 
 
@@ -16,6 +18,12 @@ router.get('/', (req, res) => {
   res.send('🚀 API Agendamento está rodando!');
 });
 
+router.get('/qr' , async (req ,res)=>{
+    const qr = getCurrentQR()
+   if (!qr) return res.status(404).json({ message: 'QR ainda não gerado' });
+    const qrDataURL = await QRCode.toDataURL(qr);
+    return res.json({ qr: qrDataURL });
+})
 //user
 router.post('/user' , (req ,res)=>{
     controllerUser.registerUser(req ,res)

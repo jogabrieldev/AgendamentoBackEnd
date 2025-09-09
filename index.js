@@ -7,21 +7,22 @@ import cors from 'cors'
 
 const app = express()
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "https://agendamento-vert.vercel.app");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Credentials", "true");
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(204);
-  }
-  next();
-});
+
+const allowedOrigins = [
+  "http://localhost:4200", 
+  "https://agendamento-vert.vercel.app" 
+];
+
 app.use(cors({
-   origin: "https://agendamento-vert.vercel.app",
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS bloqueado para essa origem: " + origin));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
-
 }));
 
 app.use(express.json())

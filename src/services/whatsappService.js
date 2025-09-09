@@ -3,6 +3,7 @@ import qrcode from 'qrcode-terminal';
 const { v4: uuidv4 } = await import('uuid');
 import Client from '../models/client.js';
 import { normalizarTelefone } from '../utils/phone.js';
+import QRCode from 'qrcode';
 
 
 const FRONT_URL =
@@ -14,6 +15,8 @@ const FRONT_URL =
 let sock;
 let isReconnecting = false;
 
+let currentQR = ""
+
 export async function connectToWhatsApp() {
   const { state, saveCreds } = await useMultiFileAuthState('auth');
 
@@ -23,17 +26,22 @@ export async function connectToWhatsApp() {
   });
 
   sock.ev.on('creds.update', saveCreds);
-
- sock.ev.on('creds.update', saveCreds);
+  
+   let qrImpressa = false;
 
   sock.ev.on('connection.update', (update) => {
     const { qr, connection, lastDisconnect } = update;
 
-    if (qr && connection !== 'open') {
-    console.clear();
-    console.log('📱 Escaneie este QR Code com o WhatsApp:');
-    qrcode.generate(qr, { small: true, errorCorrectionLevel: 'L' });
-  }
+    if (qr && connection !== 'open' && !qrImpressa) {
+      QRCode.toDataURL(qr, { margin: 1 }, (err, url) => {
+        if (err) return console.error(err);
+        currentQR = qr;
+        qrImpressa = true;
+        console.log('📱 Abra no navegador e escaneie este QR:');
+        console.log(url); // enviar para frontend via rota
+      });
+    }
+
     if (connection === 'open') {
       console.log('📱 Conectado ao WhatsApp');
       isReconnecting = false;
@@ -114,6 +122,10 @@ export async function connectToWhatsApp() {
 });
 
   return sock;
+}
+
+export function getCurrentQR() {
+  return currentQR;
 }
 
 export async function sendMessage(phoneNumber, message) {
