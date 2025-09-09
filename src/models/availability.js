@@ -11,7 +11,7 @@ const Availability = sequelize.define('availability', {
   },
   
   horario: {
-    type: DataTypes.TIME,
+    type: DataTypes.STRING(5),
     allowNull: false
   },
   status:{
