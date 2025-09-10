@@ -26,17 +26,7 @@ app.use(cors({
 }));
 
 app.use(express.json())
-
 app.use(router)
-
-try {
-  connectToWhatsApp();
-} catch (err) {
-  console.error("❌ Erro ao conectar ao WhatsApp:", err);
-}
-
-const PORT = process.env.PORT || 3000;
-
 
 const connectWithRetry = () => {
    dataBase.sequelize.authenticate()
@@ -50,6 +40,30 @@ const connectWithRetry = () => {
 };
 
 connectWithRetry();
+
+(async () => {
+  try {
+    await connectToWhatsApp();
+    console.log("📱 Serviço WhatsApp inicializado");
+  } catch (err) {
+    console.error("❌ Erro ao conectar ao WhatsApp:", err);
+  }
+})();
+
+process.on("unhandledRejection", (reason) => {
+  console.error("❌ Unhandled Rejection:", reason);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("❌ Uncaught Exception:", err);
+});
+
+
+
+const PORT = process.env.PORT || 3000;
+
+
+
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);

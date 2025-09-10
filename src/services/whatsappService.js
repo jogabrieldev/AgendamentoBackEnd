@@ -1,11 +1,11 @@
-import { makeWASocket, DisconnectReason, useMultiFileAuthState } from '@whiskeysockets/baileys';
-import qrcode from 'qrcode-terminal';
+import { makeWASocket, DisconnectReason, useMultiFileAuthState , initAuthCreds } from '@whiskeysockets/baileys';
+
 const { v4: uuidv4 } = await import('uuid');
 import Client from '../models/client.js';
 import { normalizarTelefone } from '../utils/phone.js';
 import QRCode from 'qrcode';
 import { Sequelize, DataTypes } from 'sequelize';
-import db from '../models/initModels.js'; // ajusta para seu init real
+import db from '../models/initModels.js'; 
 
 const FRONT_URL =
   process.env.NODE_ENV === "production"
@@ -16,7 +16,7 @@ let sock;
 let isReconnecting = false;
 let currentQR = "";
 
-// 🔹 Modelo para salvar a sessão
+
 const WhatsAppSession = db.sequelize.define("WhatsAppSession", {
   id: {
     type: DataTypes.STRING,
@@ -31,28 +31,54 @@ const WhatsAppSession = db.sequelize.define("WhatsAppSession", {
   timestamps: false,
 });
 
-// garante que a tabela exista
 await WhatsAppSession.sync();
 
-export async function connectToWhatsApp() {
-  // 🔹 Função customizada de storage
-  const { state, saveCreds } = await (async () => {
-    let session = await WhatsAppSession.findByPk("default");
-    let creds = session ? session.data : {};
+async function usePostgresAuth() {
+  let session = await WhatsAppSession.findByPk("default");
+  let creds, keys = {};
 
-    return {
-      state: creds,
-      saveCreds: async (updatedCreds) => {
-        await WhatsAppSession.upsert({
-          id: "default",
-          data: updatedCreds,
-        });
+  if (session) {
+    creds = session.data.creds;
+    keys = session.data.keys || {};
+  } else {
+    creds = initAuthCreds();
+  }
+
+  const saveState = async () => {
+    await WhatsAppSession.upsert({
+      id: "default",
+      data: { creds, keys }
+    });
+  };
+
+  return {
+    state: {
+      creds,
+      keys: {
+        get: (type, ids) => {
+          return ids.map(id => keys[type]?.[id] || null);
+        },
+        set: (data) => {
+          for (const type in data) {
+            keys[type] = keys[type] || {};
+            Object.assign(keys[type], data[type]);
+          }
+          saveState();
+        }
       }
-    };
-  })();
+    },
+    saveState
+  };
+}
 
+export async function connectToWhatsApp() {
+
+  const { state, saveCreds } = await usePostgresAuth()
+   
+  
   sock = makeWASocket({
     auth: state,
+    printQRInTerminal: false
   });
 
   sock.ev.on('creds.update', saveCreds);
