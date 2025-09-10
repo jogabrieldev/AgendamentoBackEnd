@@ -1,10 +1,8 @@
 import { makeWASocket, DisconnectReason, useMultiFileAuthState , initAuthCreds } from '@whiskeysockets/baileys';
-
 const { v4: uuidv4 } = await import('uuid');
 import Client from '../models/client.js';
 import { normalizarTelefone } from '../utils/phone.js';
-import QRCode from 'qrcode';
-import { Sequelize, DataTypes } from 'sequelize';
+import { DataTypes } from 'sequelize';
 import db from '../models/initModels.js'; 
 
 const FRONT_URL =
@@ -84,8 +82,11 @@ export async function connectToWhatsApp() {
 
   sock.ev.on('connection.update', (update) => {
     const { qr, connection, lastDisconnect } = update;
+         console.log("🔄 Conexão atualizada:", update);
 
     if (qr && connection !== 'open') {
+        console.log("📸 QR Code gerado:", qr);
+
         currentQR = qr;
         
     }
