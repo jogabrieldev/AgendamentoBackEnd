@@ -2,7 +2,7 @@ import { makeWASocket, DisconnectReason, useMultiFileAuthState , initAuthCreds }
 const { v4: uuidv4 } = await import('uuid');
 import Client from '../models/client.js';
 import { normalizarTelefone } from '../utils/phone.js';
-import { DataTypes, json } from 'sequelize';
+import { DataTypes} from 'sequelize';
 import db from '../models/initModels.js'; 
 
 const FRONT_URL =
@@ -31,17 +31,40 @@ const WhatsAppSession = db.sequelize.define("WhatsAppSession", {
 
 await WhatsAppSession.sync();
 
+function reviveBuffers(obj) {
+  if (!obj) return obj;
+  const revive = (val) => {
+    if (val && val.type === 'Buffer' && Array.isArray(val.data)) {
+      return Buffer.from(val.data);
+    }
+    return val;
+  };
+
+  for (const key in obj.creds) {
+    obj.creds[key] = revive(obj.creds[key]);
+  }
+
+  for (const type in obj.keys) {
+    for (const id in obj.keys[type]) {
+      obj.keys[type][id] = revive(obj.keys[type][id]);
+    }
+  }
+
+  return obj;
+};
 async function usePostgresAuth() {
   let session = await WhatsAppSession.findByPk("default");
 
-  const creds = session?.data?.creds || initAuthCreds();
-  const keys = session?.data?.keys || {};
+ let { creds, keys } = session?.data || { creds: initAuthCreds(), keys: {} };
+
+({ creds, keys } = reviveBuffers({ creds, keys }));
   
 
   const saveCreds = async () => {
     await WhatsAppSession.upsert({
       id: "default",
       data: JSON.parse(JSON.stringify({ creds, keys }))
+
     });
   };
 
