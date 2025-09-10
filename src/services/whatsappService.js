@@ -5,7 +5,7 @@ import Client from '../models/client.js';
 import { normalizarTelefone } from '../utils/phone.js';
 import QRCode from 'qrcode';
 import { Sequelize, DataTypes } from 'sequelize';
-import sequelize from '../models/initModels.js'; // ajusta para seu init real
+import db from '../models/initModels.js'; // ajusta para seu init real
 
 const FRONT_URL =
   process.env.NODE_ENV === "production"
@@ -17,7 +17,7 @@ let isReconnecting = false;
 let currentQR = "";
 
 // 🔹 Modelo para salvar a sessão
-const WhatsAppSession = sequelize.define("WhatsAppSession", {
+const WhatsAppSession = db.sequelize.define("WhatsAppSession", {
   id: {
     type: DataTypes.STRING,
     primaryKey: true,
