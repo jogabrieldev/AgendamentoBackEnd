@@ -21,8 +21,8 @@ app.use(cors({
       callback(new Error("CORS bloqueado para essa origem: " + origin));
     }
   },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  credentials: true,
+   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+   credentials: true,
 }));
 
 app.use(express.json())
@@ -34,7 +34,7 @@ const connectWithRetry = () => {
       console.log('✅ Conectado ao banco');
     })
     .catch(err => {
-      console.error('❌ Tentando reconectar...', err.message);
+      console.error(' Tentando reconectar...', err.message);
       setTimeout(connectWithRetry, 5000); // tenta novamente em 5 segundos
     });
 };
@@ -46,17 +46,17 @@ connectWithRetry();
     await connectToWhatsApp();
     console.log("📱 Serviço WhatsApp inicializado");
   } catch (err) {
-    console.error("❌ Erro ao conectar ao WhatsApp:", err);
+    console.error(" Erro ao conectar ao WhatsApp:", err);
   }
 })();
 
-process.on("unhandledRejection", (reason) => {
-  console.error("❌ Unhandled Rejection:", reason);
-});
+// process.on("unhandledRejection", (reason) => {
+//   console.error(" Unhandled Rejection:", reason);
+// });
 
-process.on("uncaughtException", (err) => {
-  console.error("❌ Uncaught Exception:", err);
-});
+// process.on("uncaughtException", (err) => {
+//   console.error(" Uncaught Exception:", err);
+// });
 
 
 
@@ -66,7 +66,7 @@ const PORT = process.env.PORT || 3000;
 
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+  console.log(` Server roading in port:${PORT}`);
 })
 
 

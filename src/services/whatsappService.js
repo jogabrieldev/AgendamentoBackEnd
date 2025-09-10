@@ -68,6 +68,7 @@ async function usePostgresAuth() {
   };
 }
 
+
 export async function connectToWhatsApp() {
 
   const { state, saveState } = await usePostgresAuth()
@@ -88,10 +89,8 @@ export async function connectToWhatsApp() {
     const { qr, connection, lastDisconnect } = update;
 
     if (qr && connection !== 'open') {
-     
         currentQR = qr;
-        // qrImpressa = true;
-     
+        
     }
 
     if (connection === 'open') {
@@ -113,6 +112,7 @@ export async function connectToWhatsApp() {
     }
   });
 
+  
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
     const msg = messages[0];
     if (!msg.message || msg.key.fromMe) return;
@@ -155,8 +155,10 @@ export async function connectToWhatsApp() {
 }
 
 export function getCurrentQR() {
+  console.log('qrcode' , currentQR)
   return currentQR;
 }
+
 
 export async function sendMessage(phoneNumber, message) {
   if (!sock) {
