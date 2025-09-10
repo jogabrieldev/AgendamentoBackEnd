@@ -35,9 +35,8 @@ await WhatsAppSession.sync();
 
 async function usePostgresAuth() {
   let session = await WhatsAppSession.findByPk("default");
-  // let creds, keys = {};
 
-  
+
   const creds = session?.data?.creds || initAuthCreds();
   const keys = session?.data?.keys || {};
   
