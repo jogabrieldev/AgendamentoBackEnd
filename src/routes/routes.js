@@ -20,10 +20,10 @@ router.get('/', (req, res) => {
 
 router.get('/qr' , async (req ,res)=>{
    
-    const qr = getCurrentQR()
+   const qr = getCurrentQR()
    if (!qr) return res.status(404).json({ message: 'QR ainda não gerado' });
-    const qrDataURL = await QRCode.toDataURL(qr);
-    return res.json({ qr: qrDataURL });
+   
+    return res.json({ qr });
 })
 //user
 router.post('/user' , (req ,res)=>{

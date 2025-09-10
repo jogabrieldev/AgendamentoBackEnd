@@ -36,15 +36,14 @@ await WhatsAppSession.sync();
 async function usePostgresAuth() {
   let session = await WhatsAppSession.findByPk("default");
 
-
   const creds = session?.data?.creds || initAuthCreds();
   const keys = session?.data?.keys || {};
   
 
-  const saveState = async (updateCreds = creds) => {
+  const saveCreds = async () => {
     await WhatsAppSession.upsert({
       id: "default",
-      data: { creds:updateCreds, keys }
+      data: { creds, keys }
     });
   };
 
@@ -60,18 +59,18 @@ async function usePostgresAuth() {
             keys[type] = keys[type] || {};
             Object.assign(keys[type], data[type]);
           }
-          saveState();
+         saveCreds();
         }
       }
     },
-    saveState
+    saveCreds
   };
 }
 
 
 export async function connectToWhatsApp() {
 
-  const { state, saveState } = await usePostgresAuth()
+  const { state, saveCreds } = await usePostgresAuth()
    
   
   sock = makeWASocket({
@@ -80,9 +79,7 @@ export async function connectToWhatsApp() {
   });
 
 
-  sock.ev.on('creds.update', (newCreds)=>{
-     saveState(newCreds)
-  });
+  sock.ev.on('creds.update', saveCreds);
 
 
   sock.ev.on('connection.update', (update) => {
