@@ -35,19 +35,17 @@ await WhatsAppSession.sync();
 
 async function usePostgresAuth() {
   let session = await WhatsAppSession.findByPk("default");
-  let creds, keys = {};
+  // let creds, keys = {};
 
-  if (session) {
-    creds = session.data.creds;
-    keys = session.data.keys || {};
-  } else {
-    creds = initAuthCreds();
-  }
+  
+  const creds = session?.data?.creds || initAuthCreds();
+  const keys = session.data.keys || {};
+  
 
-  const saveState = async () => {
+  const saveState = async (updateCreds = creds) => {
     await WhatsAppSession.upsert({
       id: "default",
-      data: { creds, keys }
+      data: { creds:updateCreds, keys }
     });
   };
 
@@ -78,17 +76,17 @@ export async function connectToWhatsApp() {
   
   sock = makeWASocket({
     auth: state,
-    printQRInTerminal: false
+    printQRInTerminal: true,
+    browser:["MyApp" , "Chrome" , "1.0"]
   });
 
   sock.ev.on('creds.update', saveCreds);
 
-  let qrImpressa = false;
 
   sock.ev.on('connection.update', (update) => {
     const { qr, connection, lastDisconnect } = update;
 
-    if (qr && connection !== 'open' && !qrImpressa) {
+    if (qr && connection !== 'open') {
       QRCode.toDataURL(qr, { margin: 1 }, (err, url) => {
         if (err) return console.error(err);
         currentQR = qr;
