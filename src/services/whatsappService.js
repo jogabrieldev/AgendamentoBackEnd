@@ -76,11 +76,13 @@ export async function connectToWhatsApp() {
   
   sock = makeWASocket({
     auth: state,
-    printQRInTerminal: true,
     browser:["MyApp" , "Chrome" , "1.0"]
   });
 
-  sock.ev.on('creds.update', saveState);
+
+  sock.ev.on('creds.update', (newCreds)=>{
+     saveState(newCreds)
+  });
 
 
   sock.ev.on('connection.update', (update) => {
@@ -101,13 +103,10 @@ export async function connectToWhatsApp() {
     if (connection === 'close' && !isReconnecting) {
       isReconnecting = true;
       const statusCode = lastDisconnect?.error?.output?.statusCode;
-      const reason = DisconnectReason[statusCode] || 'unknown';
-
+     
       if (statusCode !== DisconnectReason.loggedOut) {
         console.log('Reconectando...');
-        connectToWhatsApp().finally(() => {
-          isReconnecting = false;
-        });
+         setTimeout(connectToWhatsApp, 5000);
       } else {
         console.log('Logout detectado, limpe sessão no banco para reautenticar.');
         isReconnecting = false;
