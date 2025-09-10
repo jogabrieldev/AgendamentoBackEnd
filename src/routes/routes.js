@@ -21,8 +21,8 @@ router.get('/', (req, res) => {
 router.get('/qr' , async (req ,res)=>{
    
    const qr = getCurrentQR()
-   if (!qr) return res.status(404).json({ message: 'QR ainda não gerado' });
-   
+   // if (!qr) return res.status(404).json({ message: 'QR ainda não gerado' });
+
     return res.json({ qr });
 })
 //user
