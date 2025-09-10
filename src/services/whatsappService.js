@@ -2,7 +2,7 @@ import { makeWASocket, DisconnectReason, useMultiFileAuthState , initAuthCreds }
 const { v4: uuidv4 } = await import('uuid');
 import Client from '../models/client.js';
 import { normalizarTelefone } from '../utils/phone.js';
-import { DataTypes } from 'sequelize';
+import { DataTypes, json } from 'sequelize';
 import db from '../models/initModels.js'; 
 
 const FRONT_URL =
@@ -41,7 +41,7 @@ async function usePostgresAuth() {
   const saveCreds = async () => {
     await WhatsAppSession.upsert({
       id: "default",
-      data: { creds, keys }
+      data: JSON.parse(JSON.stringify({ creds, keys }))
     });
   };
 
