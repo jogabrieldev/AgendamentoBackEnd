@@ -33,25 +33,22 @@ await WhatsAppSession.sync();
 
 function reviveBuffers(obj) {
   if (!obj) return obj;
+
   const revive = (val) => {
-    if (val && val.type === 'Buffer' && Array.isArray(val.data)) {
-      return Buffer.from(val.data);
+    if (val && typeof val === "object") {
+      if (val.type === "Buffer" && Array.isArray(val.data)) {
+        return Buffer.from(val.data);
+      }
+      for (const k in val) {
+        val[k] = revive(val[k]);
+      }
     }
     return val;
   };
 
-  for (const key in obj.creds) {
-    obj.creds[key] = revive(obj.creds[key]);
-  }
+  return revive(obj);
+}
 
-  for (const type in obj.keys) {
-    for (const id in obj.keys[type]) {
-      obj.keys[type][id] = revive(obj.keys[type][id]);
-    }
-  }
-
-  return obj;
-};
 async function usePostgresAuth() {
   let session = await WhatsAppSession.findByPk("default");
 
