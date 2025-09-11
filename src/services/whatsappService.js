@@ -128,19 +128,25 @@ export async function connectToWhatsApp() {
     if (connection === 'open') {
       console.log('📱 Conectado ao WhatsApp');
       isReconnecting = false;
-    }
+    } 
+
+    let tentativasReconexao = 0;
+    const MAX_TENTATIVAS = 5;
 
     if (connection === 'close' && !isReconnecting) {
       isReconnecting = true;
       const statusCode = lastDisconnect?.error?.output?.statusCode;
      
-      if (statusCode !== DisconnectReason.loggedOut) {
-        console.log('Reconectando...');
-         setTimeout(connectToWhatsApp, 5000);
-      } else {
-        console.log('Logout detectado, limpe sessão no banco para reautenticar.');
-        isReconnecting = false;
-      }
+       if (statusCode !== DisconnectReason.loggedOut && tentativasReconexao < MAX_TENTATIVAS) {
+    tentativasReconexao++;
+    console.log(`🔁 Tentativa de reconexão #${tentativasReconexao}`);
+    setTimeout(connectToWhatsApp, 5000);
+  } else {
+    console.log('❌ Reconexão falhou ou logout detectado.');
+    isReconnecting = false;
+    tentativasReconexao = 0;
+  }
+
     }
   });
 
@@ -149,10 +155,12 @@ export async function connectToWhatsApp() {
     const msg = messages[0];
 
      console.log('Mensagem recebida raw:', msg);
-    if (!msg.message || msg.key.fromMe) return;
+    if (!msg.message || msg.key.fromMe || msg.messageStubType) return;
 
     const numeroDeTelefone = msg.key.remoteJid;
+    
     const telefone = normalizarTelefone(numeroDeTelefone);
+    console.log('📞 JID recebido:', numeroDeTelefone);
 
     if (!telefone) {
       console.log("⚠️ Mensagem veio de um grupo ou JID inválido:", numeroDeTelefone);
@@ -165,8 +173,7 @@ export async function connectToWhatsApp() {
 
     if (!client) {
       console.log('⚠️ Cliente não encontrado na base. Solicitando cadastro.');
-      const tokenAcess = uuidv4();
-      const linkCadastro = `${FRONT_URL}/cliente/cadastro/`;
+      const linkCadastro = `${FRONT_URL}/cliente/cadastro`;
 
       await sock.sendMessage(numeroDeTelefone, {
         text: `Olá! 👋 Não encontramos seu cadastro no sistema. Por favor, clique no LINK e faça seu cadastro:\n${linkCadastro}`
