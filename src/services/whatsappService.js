@@ -147,6 +147,8 @@ export async function connectToWhatsApp() {
   
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
     const msg = messages[0];
+
+     console.log('Mensagem recebida raw:', msg);
     if (!msg.message || msg.key.fromMe) return;
 
     const numeroDeTelefone = msg.key.remoteJid;
@@ -187,7 +189,6 @@ export async function connectToWhatsApp() {
 }
 
 export function getCurrentQR() {
-  console.log('qrcode' , currentQR)
   return currentQR;
 }
 
