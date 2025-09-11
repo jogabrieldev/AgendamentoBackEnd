@@ -10,7 +10,7 @@ const app = express()
 
 const allowedOrigins = [
   "http://localhost:4200", 
-  "https://agendamento-vert.vercel.app" 
+  "https://agendamento-rouge-rho.vercel.app/" 
 ];
 
 app.use(cors({
@@ -35,7 +35,7 @@ const connectWithRetry = () => {
     })
     .catch(err => {
       console.error(' Tentando reconectar...', err.message);
-      setTimeout(connectWithRetry, 5000); // tenta novamente em 5 segundos
+      setTimeout(connectWithRetry, 5000); 
     });
 };
 
@@ -50,25 +50,12 @@ connectWithRetry();
   }
 })();
 
-// process.on("unhandledRejection", (reason) => {
-//   console.error(" Unhandled Rejection:", reason);
-// });
-
-// process.on("uncaughtException", (err) => {
-//   console.error(" Uncaught Exception:", err);
-// });
-
-
 
 const PORT = process.env.PORT || 3000;
-
-
-
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(` Server roading in port:${PORT}`);
 })
 
 
-  // dataBase.sequelize.authenticate()
  
