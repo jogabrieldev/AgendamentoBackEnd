@@ -107,6 +107,7 @@ export async function connectToWhatsApp() {
   
   sock = makeWASocket({
     auth: state,
+    mobile: true,
     browser:["MyApp" , "Chrome" , "1.0"]
   });
 
@@ -158,7 +159,7 @@ export async function connectToWhatsApp() {
     if (!msg.message || msg.key.fromMe || msg.messageStubType) return;
 
     const numeroDeTelefone = msg.key.remoteJid;
-    
+
     const telefone = normalizarTelefone(numeroDeTelefone);
     console.log('📞 JID recebido:', numeroDeTelefone);
 
