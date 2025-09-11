@@ -12,6 +12,7 @@ export const controllerService = {
           .json({ message: "Algum campo Obrigatorio não foi preechido" });
       }
 
+        
       const existingService = await Service.findOne({
         where: {
           name: name,
@@ -20,9 +21,7 @@ export const controllerService = {
       });
 
       if (existingService) {
-        return res
-          .status(409)
-          .json({
+        return res.status(409).json({
             message: "Serviço com este nome já cadastrado para este usuário.",
           });
       }
@@ -44,9 +43,9 @@ export const controllerService = {
     }
   },
 
-  async getAllServicesId(req, res) {
+ async getAllServicesId(req, res) {
   try {
-    const { barberId } = req.query;  // ← pegar o filtro opcional via query string
+    const { barberId } = req.query;  
 
     let where = {};
     if (barberId) {

@@ -114,6 +114,15 @@ export async function createAppointment(req, res) {
   try {
     const { data, horario, idClient, idUser, idServi, preco, nota } = req.body;
 
+    const hoje = new Date();
+    hoje.setHours(0,0,0,0); // zera hora, minutos, segundos
+    const dataAgendamento = new Date(data);
+    dataAgendamento.setHours(0,0,0,0);
+
+    if (dataAgendamento < hoje) {
+      return res.status(400).json({ error: 'Não é possível agendar para datas passadas.' });
+    }
+
   
     const existe = await Appointment.findOne({
       where: {
