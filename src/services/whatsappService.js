@@ -164,7 +164,7 @@ export async function connectToWhatsApp() {
     if (!client) {
       console.log('⚠️ Cliente não encontrado na base. Solicitando cadastro.');
       const tokenAcess = uuidv4();
-      const linkCadastro = `${FRONT_URL}/cliente/cadastro/${tokenAcess}`;
+      const linkCadastro = `${FRONT_URL}/cliente/cadastro/`;
 
       await sock.sendMessage(numeroDeTelefone, {
         text: `Olá! 👋 Não encontramos seu cadastro no sistema. Por favor, clique no LINK e faça seu cadastro:\n${linkCadastro}`
