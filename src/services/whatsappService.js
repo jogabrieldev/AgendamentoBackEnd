@@ -1,4 +1,4 @@
-import { makeWASocket, DisconnectReason, useMultiFileAuthState , initAuthCreds } from '@whiskeysockets/baileys';
+import { makeWASocket, DisconnectReason, initAuthCreds } from '@whiskeysockets/baileys';
 const { v4: uuidv4 } = await import('uuid');
 import Client from '../models/client.js';
 import { normalizarTelefone } from '../utils/phone.js';
@@ -31,59 +31,73 @@ const WhatsAppSession = db.sequelize.define("WhatsAppSession", {
 
 await WhatsAppSession.sync();
 
+
+// 🔹 Função para restaurar Buffers
 function reviveBuffers(obj) {
-  if (!obj) return obj;
+  if (!obj) return obj
 
   const revive = (val) => {
     if (val && typeof val === "object") {
       if (val.type === "Buffer" && Array.isArray(val.data)) {
-        return Buffer.from(val.data);
+        return Buffer.from(val.data)
       }
-      for (const k in val) {
-        val[k] = revive(val[k]);
+      for (const k of Object.keys(val)) {
+        try {
+          val[k] = revive(val[k])
+        } catch {
+          // ignora getters/setters
+        }
       }
     }
-    return val;
-  };
+    return val
+  }
 
-  return revive(obj);
+  return revive(obj)
 }
 
-async function usePostgresAuth() {
-  let session = await WhatsAppSession.findByPk("default");
+// 🔹 Versão estilo useMultiFileAuthState, mas no Postgres
+export async function usePostgresAuth() {
+  let session = await WhatsAppSession.findByPk("default")
 
- let { creds, keys } = session?.data || { creds: initAuthCreds(), keys: {} };
+  let creds, keys
 
-({ creds, keys } = reviveBuffers({ creds, keys }));
-  
+  if (session) {
+    const raw = reviveBuffers(session.data)
+    creds = raw.creds
+    keys = raw.keys || {}
+  } else {
+    creds = initAuthCreds()
+    keys = {}
+  }
 
   const saveCreds = async () => {
     await WhatsAppSession.upsert({
       id: "default",
-      data: JSON.parse(JSON.stringify({ creds, keys }))
-
-    });
-  };
+      data: JSON.parse(JSON.stringify({ creds, keys })),
+    })
+  }
 
   return {
     state: {
       creds,
       keys: {
         get: (type, ids) => {
-          return ids.map(id => keys[type]?.[id] || null);
+          const data = ids.map(id => keys[type]?.[id] || null)
+          return data
         },
         set: (data) => {
           for (const type in data) {
-            keys[type] = keys[type] || {};
-            Object.assign(keys[type], data[type]);
+            keys[type] = keys[type] || {}
+            Object.assign(keys[type], data[type])
           }
-         saveCreds();
-        }
-      }
+          saveCreds()
+        },
+      },
     },
-    saveCreds
-  };
+    saveCreds,
+  }
 }
+
 
 
 export async function connectToWhatsApp() {
