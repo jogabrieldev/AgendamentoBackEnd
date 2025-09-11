@@ -107,7 +107,6 @@ export async function connectToWhatsApp() {
   
   sock = makeWASocket({
     auth: state,
-    mobile: true,
     browser:["MyApp" , "Chrome" , "1.0"]
   });
 
