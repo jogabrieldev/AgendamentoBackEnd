@@ -1,4 +1,4 @@
-import { makeWASocket, DisconnectReason, initAuthCreds } from '@whiskeysockets/baileys';
+import { makeWASocket, DisconnectReason, initAuthCreds, bro } from '@whiskeysockets/baileys';
 const { v4: uuidv4 } = await import('uuid');
 import Client from '../models/client.js';
 import { normalizarTelefone } from '../utils/phone.js';
