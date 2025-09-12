@@ -28,6 +28,19 @@ app.use(cors({
 app.use(express.json())
 app.use(router)
 
+const createTableDataBase = () => {
+  dataBase.sequelize.sync({ alter: true }) // ou { force: true } se quiser recriar do zero
+    .then(() => {
+      console.log('✅ Conectado ao banco e tabelas sincronizadas');
+    })
+    .catch(err => {
+      console.error('❌ Erro ao conectar/sincronizar:', err.message);
+      setTimeout(connectWithRetry, 5000);
+    });
+};
+createTableDataBase()
+
+
 const connectWithRetry = () => {
    dataBase.sequelize.authenticate()
     .then(() => {
