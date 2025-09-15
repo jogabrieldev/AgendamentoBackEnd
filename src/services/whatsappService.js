@@ -13,6 +13,7 @@ const FRONT_URL =
 let sock;
 let isReconnecting = false;
 let currentQR = "";
+let qrAlreadyGenerated = false
 
 
 const WhatsAppSession = db.sequelize.define("WhatsAppSession", {
@@ -45,7 +46,7 @@ function reviveBuffers(obj) {
         try {
           val[k] = revive(val[k])
         } catch {
-          // ignora getters/setters
+        
         }
       }
     }
@@ -99,7 +100,6 @@ export async function usePostgresAuth() {
 }
 
 
-
 export async function connectToWhatsApp() {
 
   const { state, saveCreds } = await usePostgresAuth()
@@ -118,16 +118,18 @@ export async function connectToWhatsApp() {
     const { qr, connection, lastDisconnect } = update;
          console.log("🔄 Conexão atualizada:", update);
 
-    if (qr && connection !== 'open') {
+    if (qr && !qrAlreadyGenerated && connection !== 'open') {
         console.log("📸 QR Code gerado:", qr);
 
         currentQR = qr;
+        qrAlreadyGenerated = true
         
     }
 
     if (connection === 'open') {
       console.log('📱 Conectado ao WhatsApp');
       isReconnecting = false;
+      qrAlreadyGenerated = false
     } 
 
     let tentativasReconexao = 0;
