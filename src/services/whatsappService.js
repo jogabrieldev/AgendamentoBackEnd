@@ -157,7 +157,7 @@ export async function connectToWhatsApp() {
     const msg = messages[0];
 
      console.log('Mensagem recebida raw:', msg);
-    if (!msg.message || msg.key.fromMe || msg.messageStubType) return;
+    if (!msg.message || msg.key.fromMe ) return;
 
     const numeroDeTelefone = msg.key.remoteJid;
 
