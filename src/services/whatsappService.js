@@ -158,11 +158,11 @@ export async function connectToWhatsApp() {
   });
 
   
-  sock.ev.on('messages.upsert', async ({ messages}) => {
+  sock.ev.on('messages.upsert', async ({ messages }) => {
     const msg = messages[0];
 
      console.log('Mensagem recebida raw:', msg);
-     if (!msg.message?.conversation && !msg.message?.extendedTextMessage) return
+    if (!msg.message || msg.key.fromMe|| msg.message.protocolMessage ) return;
 
     const numeroDeTelefone = msg.key.remoteJid;
 
