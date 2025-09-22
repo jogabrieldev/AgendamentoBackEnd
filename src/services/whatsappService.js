@@ -195,7 +195,7 @@ export async function connectToWhatsApp() {
         text: `Olá, ${client.name}! 👋\n Clique no link abaixo para agendar seu horário:\n${agendaLink}`
       });
     } catch (error) {
-      console.error('Erro ao enviar');
+      console.error('Erro ao enviar o link' , error);
     }
   });
 
