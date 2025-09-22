@@ -10,6 +10,11 @@ const FRONT_URL =
     ? process.env.FRONT_URL_PROD
     : process.env.FRONT_URL_LOCAL;
 
+    console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("FRONT_URL_PROD:", process.env.FRONT_URL_PROD);
+console.log("FRONT_URL usado:", FRONT_URL);
+
+
 let sock;
 let isReconnecting = false;
 let currentQR = "";
