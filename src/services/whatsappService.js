@@ -20,6 +20,7 @@ let isReconnecting = false;
 let currentQR = "";
 let qrAlreadyGenerated = false
 let tentativasReconexao = 0;
+const MAX_TENTATIVAS = 5;
 
 
 const WhatsAppSession = db.sequelize.define("WhatsAppSession", {
@@ -84,17 +85,20 @@ export async function usePostgresAuth() {
     })
   }
 
-   return {
+  return {
     state: {
       creds,
       keys: {
-        get: (type, ids) => ids.map(id => keys[type]?.[id] || null),
-        set: async (data) => { // 🔹 Correção: await saveCreds
+        get: (type, ids) => {
+          const data = ids.map(id => keys[type]?.[id] || null)
+          return data
+        },
+        set: (data) => {
           for (const type in data) {
-            keys[type] = keys[type] || {};
-            Object.assign(keys[type], data[type]);
+            keys[type] = keys[type] || {}
+            Object.assign(keys[type], data[type])
           }
-          await saveCreds();
+          saveCreds()
         },
       },
     },
@@ -133,10 +137,9 @@ export async function connectToWhatsApp() {
       console.log('📱 Conectado ao WhatsApp');
       isReconnecting = false;
       qrAlreadyGenerated = false
-      tentativasReconexao = 0;
     } 
 
-    const MAX_TENTATIVAS = 5;
+  
 
     if (connection === 'close' && !isReconnecting) {
       isReconnecting = true;
@@ -160,7 +163,7 @@ export async function connectToWhatsApp() {
     const msg = messages[0];
 
      console.log('Mensagem recebida raw:', msg);
-    if (!msg.message || msg.key.fromMe|| msg.message.protocolMessage ) return;
+    if (!msg.message || msg.key.fromMe ) return;
 
     const numeroDeTelefone = msg.key.remoteJid;
 
@@ -206,12 +209,11 @@ export function getCurrentQR() {
 
 
 export async function sendMessage(phoneNumber, message) {
-  if (!sock) {
-    throw new Error('WhatsApp não conectado ainda.');
-  }
+  if (!sock) throw new Error('WhatsApp não conectado ainda.');
 
-    const jid = `${phoneNumber}@s.whatsapp.net`;
-  
+  const jid = `${phoneNumber}@s.whatsapp.net`;
+
+  // 🔹 Inicializa sessão E2E antes de enviar
   await sock.presenceSubscribe(jid);
 
   await sock.sendMessage(jid, { text: message });
