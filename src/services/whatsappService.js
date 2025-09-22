@@ -117,8 +117,8 @@ export async function connectToWhatsApp() {
 
 
   sock.ev.on('creds.update', saveCreds);
-
-
+   
+  let socketReady = false;
   sock.ev.on('connection.update', (update) => {
     const { qr, connection, lastDisconnect } = update;
          console.log("🔄 Conexão atualizada:", update);
@@ -160,7 +160,7 @@ export async function connectToWhatsApp() {
   
   sock.ev.on('messages.upsert', async ({ messages}) => {
     const msg = messages[0];
-
+     if(!socketReady) return;
      console.log('Mensagem recebida raw:', msg);
      if (!msg.message?.conversation && !msg.message?.extendedTextMessage) return
 
