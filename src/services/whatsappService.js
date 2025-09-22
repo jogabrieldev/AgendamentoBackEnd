@@ -19,6 +19,7 @@ let sock;
 let isReconnecting = false;
 let currentQR = "";
 let qrAlreadyGenerated = false
+let tentativasReconexao = 0;
 
 
 const WhatsAppSession = db.sequelize.define("WhatsAppSession", {
