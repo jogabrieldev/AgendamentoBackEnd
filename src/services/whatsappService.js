@@ -83,20 +83,17 @@ export async function usePostgresAuth() {
     })
   }
 
-  return {
+   return {
     state: {
       creds,
       keys: {
-        get: (type, ids) => {
-          const data = ids.map(id => keys[type]?.[id] || null)
-          return data
-        },
-        set: (data) => {
+        get: (type, ids) => ids.map(id => keys[type]?.[id] || null),
+        set: async (data) => { // 🔹 Correção: await saveCreds
           for (const type in data) {
-            keys[type] = keys[type] || {}
-            Object.assign(keys[type], data[type])
+            keys[type] = keys[type] || {};
+            Object.assign(keys[type], data[type]);
           }
-          saveCreds()
+          await saveCreds();
         },
       },
     },
@@ -135,9 +132,9 @@ export async function connectToWhatsApp() {
       console.log('📱 Conectado ao WhatsApp');
       isReconnecting = false;
       qrAlreadyGenerated = false
+      tentativasReconexao = 0;
     } 
 
-    let tentativasReconexao = 0;
     const MAX_TENTATIVAS = 5;
 
     if (connection === 'close' && !isReconnecting) {
@@ -212,6 +209,9 @@ export async function sendMessage(phoneNumber, message) {
     throw new Error('WhatsApp não conectado ainda.');
   }
 
-  const jid = `${phoneNumber}@s.whatsapp.net`;
+    const jid = `${phoneNumber}@s.whatsapp.net`;
+  
+  await sock.presenceSubscribe(jid);
+
   await sock.sendMessage(jid, { text: message });
 }
