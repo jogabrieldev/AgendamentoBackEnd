@@ -7,6 +7,7 @@ let sequelize;
 if (process.env.URL_DO_BANCO_DE_DADOS) {
   // 🚀 Produção (Railway) usando a URL completa
   sequelize = new Sequelize(process.env.URL_DO_BANCO_DE_DADOS, {
+
     dialect: "postgres",
     logging: false,
     dialectOptions: {

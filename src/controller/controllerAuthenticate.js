@@ -30,7 +30,6 @@ export const login = async (req, res) => {
       return res.status(400).json({ error: "Telefone inválido!" });
     }
 
-    console.log('Telefone normalizado:', telefone);
 
     const user = await authenticate(telefone, senha);
 
