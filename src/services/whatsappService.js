@@ -1,18 +1,16 @@
 import { makeWASocket, DisconnectReason, initAuthCreds } from '@whiskeysockets/baileys';
-const { v4: uuidv4 } = await import('uuid');
-import Client from '../models/client.js';
-import { normalizarTelefone } from '../utils/phone.js';
 import { DataTypes} from 'sequelize';
 import db from '../models/initModels.js'; 
+
 
 const FRONT_URL =
   process.env.NODE_ENV === "production"
     ? process.env.FRONT_URL_PROD
     : process.env.FRONT_URL_LOCAL;
 
-    console.log("NODE_ENV:", process.env.NODE_ENV);
-console.log("FRONT_URL_PROD:", process.env.FRONT_URL_PROD);
-console.log("FRONT_URL usado:", FRONT_URL);
+//     console.log("NODE_ENV:", process.env.NODE_ENV);
+// console.log("FRONT_URL_PROD:", process.env.FRONT_URL_PROD);
+// console.log("FRONT_URL usado:", FRONT_URL);
 
 
 let sock;
@@ -23,6 +21,7 @@ let tentativasReconexao = 0;
 const MAX_TENTATIVAS = 5;
 
 
+//Crinade a tabela para armazenar credenciais
 const WhatsAppSession = db.sequelize.define("WhatsAppSession", {
   id: {
     type: DataTypes.STRING,
@@ -40,7 +39,7 @@ const WhatsAppSession = db.sequelize.define("WhatsAppSession", {
 await WhatsAppSession.sync();
 
 
-// 🔹 Função para restaurar Buffers
+//  Função para restaurar Buffers
 function reviveBuffers(obj) {
   if (!obj) return obj
 
@@ -61,9 +60,9 @@ function reviveBuffers(obj) {
   }
 
   return revive(obj)
-}
+};
 
-// 🔹 Versão estilo useMultiFileAuthState, mas no Postgres
+//  Versão estilo useMultiFileAuthState, mas no Postgres
 export async function usePostgresAuth() {
   let session = await WhatsAppSession.findByPk("default")
 
@@ -83,14 +82,19 @@ export async function usePostgresAuth() {
       id: "default",
       data: JSON.parse(JSON.stringify({ creds, keys })),
     })
-  }
+  };
 
   return {
     state: {
       creds,
       keys: {
         get: (type, ids) => {
-          const data = ids.map(id => keys[type]?.[id] || null)
+          const data = {}
+          for (const id of ids) {
+            if (keys[type]?.[id]) {
+              data[id] = reviveBuffers(keys[type][id]) 
+            }
+          }
           return data
         },
         set: (data) => {
@@ -103,10 +107,10 @@ export async function usePostgresAuth() {
       },
     },
     saveCreds,
-  }
-}
+  };
+};
 
-
+// fazendo conexão
 export async function connectToWhatsApp() {
 
   const { state, saveCreds } = await usePostgresAuth()
@@ -114,8 +118,8 @@ export async function connectToWhatsApp() {
   
   sock = makeWASocket({
     auth: state,
-    printQRInTerminal: false, // já que você mostra no front
-    qrTimeout: 60000,         // 60s para escanear
+    printQRInTerminal: false, 
+    qrTimeout: 60000,         
     connectTimeoutMs: 6000,
     browser:["MyApp" , "Chrome" , "1.0"]
   });
@@ -130,6 +134,7 @@ export async function connectToWhatsApp() {
 
     if (qr && !qrAlreadyGenerated && connection !== 'open') {
         console.log("📸 QR Code gerado:", qr);
+        // qrcode.generate(qr, { small: true });
 
         currentQR = qr;
         qrAlreadyGenerated = true
@@ -143,7 +148,6 @@ export async function connectToWhatsApp() {
     } 
 
   
-
     if (connection === 'close' && !isReconnecting) {
       isReconnecting = true;
       const statusCode = lastDisconnect?.error?.output?.statusCode;
@@ -161,63 +165,65 @@ export async function connectToWhatsApp() {
     }
   });
 
+  // pegando a mensagem enviada para o contato
+  
+  const clientesQueReceberamLink = new Set();
   
   sock.ev.on('messages.upsert', async ({ messages }) => {
+
     const msg = messages[0];
 
-     console.log('Mensagem recebida raw:', msg);
     if (!msg.message || msg.key.fromMe ) return;
 
-    const numeroDeTelefone = msg.key.remoteJid;
+      const fullJid = msg.key.remoteJid;
 
-    const telefone = normalizarTelefone(numeroDeTelefone);
-    console.log('📞 JID recebido:', numeroDeTelefone);
+      if(fullJid && !clientesQueReceberamLink.has(fullJid)){
 
-    if (!telefone) {
-      console.log("⚠️ Mensagem veio de um grupo ou JID inválido:", numeroDeTelefone);
+        
+         console.log('⚠️ Cliente não encontrado na base. Solicitando cadastro.');
+          const linkCadastro = `${FRONT_URL}/cliente/cadastro`;
+
+          await sock.sendMessage(fullJid, {
+           text: `Olá! 👋 se ja possui cadastro, clique no botão ja cadastrado e digite o seu numero de telefone que ja foi cadastrado:\n${linkCadastro}`
+         } , { quoted: msg });
+          clientesQueReceberamLink.add(fullJid);
+      }
       return;
-    }
-
-    console.log('📩 Mensagem recebida de:', telefone);
-
-    let client = await Client.findOne({ where: { telefone: telefone.trim() } });
-
-    if (!client) {
-      console.log('⚠️ Cliente não encontrado na base. Solicitando cadastro.');
-      const linkCadastro = `${FRONT_URL}/cliente/cadastro`;
-
-      await sock.sendMessage(numeroDeTelefone, {
-        text: `Olá! 👋 Não encontramos seu cadastro no sistema. Por favor, clique no LINK e faça seu cadastro:\n${linkCadastro}`
-      });
-
-      return;
-    }
-
-    try {
-      const agendaLink = `${FRONT_URL}/client/acesso/${client.tokenAcess}`;
-      await sock.sendMessage(numeroDeTelefone, {
-        text: `Olá, ${client.name}! 👋\n Clique no link abaixo para agendar seu horário:\n${agendaLink}`
-      });
-    } catch (error) {
-      console.error('Erro ao enviar o link' , error);
-    }
   });
 
   return sock;
-}
+};
 
+// pegando o qrcode e enviando para o front
 export function getCurrentQR() {
   return currentQR;
-}
+};
 
 
-export async function sendMessage(phoneNumber, message) {
+// enviando a mensagem
+export async function sendMessage(jid, message) {
   if (!sock) throw new Error('WhatsApp não conectado ainda.');
 
-  const jid = `${phoneNumber}@s.whatsapp.net`;
+   if (!jid.includes('@s.whatsapp.net')) {
+    jid = `${jid}@s.whatsapp.net`;
+  }
 
-  // 🔹 Inicializa sessão E2E antes de enviar
-  await sock.presenceSubscribe(jid);
+  console.log("Enviando mensagem para:", jid);
 
-  await sock.sendMessage(jid, { text: message });
-}
+  try {
+    await sock.presenceSubscribe(jid); 
+    await sock.sendMessage(jid, { text: message });
+  } catch (err) {
+    if (err?.message === 'Invalid PreKey ID') {
+      console.log('⚠️ Invalid PreKey ID detectado. Recriando sessão...');
+      await sock.logout();
+      await connectToWhatsApp(); 
+      await sendMessage(jid, message); 
+    } else {
+      console.error('Erro ao enviar mensagem:', err);
+    }
+  }
+};
+
+
+

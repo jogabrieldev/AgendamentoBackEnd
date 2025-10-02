@@ -1,27 +1,33 @@
 import Client from "../models/client.js";
-import User from "../models/user.js";
 import { v4 as uuidv4 } from "uuid";
+import  jsonWebToken from "jsonwebtoken";
 import Service from "../models/services.js";
 import { normalizarTelefone } from "../utils/phone.js";
+import { updateClientCache , getClientByPhone } from "../services/clientService.js";
+
+const jwt = jsonWebToken
 
 export const controllerClient = {
   async registerClient(req, res) {
     try {
-      let { name, phone , idUser , token} = req.body
+      let { name, phone , email, idUser , token} = req.body
 
       if (!name || !phone) {
         return res.status(404).json({ message: "Dados obrigatorios não passados" });
       }
-
+       
       if(!idUser){
          idUser = 1
        }
 
-       const telefone = normalizarTelefone(phone);
+       const emailRegex =  /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+       if (email && !emailRegex.test(email)) {
+         return res.status(400).json({ message: "Email inválido" });
+        }
 
-     
+       const telefone = normalizarTelefone(phone);
+  
       const validPhone = await Client.findOne({where:{telefone: telefone}})
-      
       if(validPhone){
         return res.status(422).json({message:"numero ja cadastrado no sistema"})
       }
@@ -33,12 +39,14 @@ export const controllerClient = {
       const newClient = await Client.create({
         name,
         telefone,
+        email,
         dataCadastro: new Date(),
         idUser,
         tokenAcess
       });
 
       if (newClient) {
+        updateClientCache(newClient)
         return res
           .status(201)
           .json({
@@ -49,105 +57,73 @@ export const controllerClient = {
       }
     } catch (error) {
       console.error("Erro no controller client", error);
-      return res.status(500).json({ message: "Erro no server para cadastrar cleinte" });
+      return res.status(500).json({ message: "Erro no server para cadastrar cliente! Verifique com criador do sistema" });
     }
   },
 
-  async generateAccessLink(req, res) {
-    const { numberClient } = req.params;
-    console.log(numberClient)
-    if(!numberClient){
-       return res.status(400).json({message:"E preciso ser passado o numero so cliente"})
-    }
-
-    const client = await Client.findOne( {where: {telefone: numberClient}});
-    
-
-    if (!client) {
-      return res.status(404).json({ message: "Cliente não encontrado" });
-    }
-
-    // Gera um token de acesso simples
-    const tokenAcesso = uuidv4();
-
-    // Armazena esse token na tabela Client (adicione esse campo no modelo)
-    client.tokenAcess = tokenAcesso;
-    await client.save();
-
-    // Link de acesso (envie por WhatsApp, e-mail, etc.
-    const link = `http://localhost:3000/client/acesso/${tokenAcesso}`;
-
-    return res.status(200).json({ success: true, link });
-  },
-
-  async updateClientByToken(req, res) {
-  const { token } = req.params;
-  const { name, telefone } = req.body;
-
+async validatePhoneClient(req, res) {
   try {
-    const client = await Client.findOne({ where: { tokenAcess: token } });
+    const { phone } = req.params;
 
-    if (!client) {
-      return res.status(404).json({ message: 'Token inválido ou expirado.' });
+    if (!phone) {
+      return res.status(400).json({ message: "Numero de telefone não foi passado!" });
     }
 
-    client.name = name;
-    client.telefone = telefone;
+    // normaliza o telefone (para garantir que vem no formato certo, ex: com DDD)
+    const normalized = normalizarTelefone(phone);
 
-    await client.save();
+    if (!normalized) {
+      return res.status(400).json({ message: "Telefone inválido!" });
+    }
+
+
+    // busca no cache ou banco
+    const verifique = await getClientByPhone(normalized);
+
+    if (!verifique) {
+      return res.status(400).json({ message: "Numero não presente na nossa base!" });
+    }
+
 
     return res.status(200).json({
+      message: "Numero encontrado na nossa base",
       success: true,
-      message: 'Cadastro finalizado com sucesso!',
-      client
+      verifique
     });
-  } catch (error) {
-    console.error('Erro ao atualizar cliente:', error);
-    return res.status(500).json({ message: 'Erro interno ao atualizar cliente.' });
-  }
-},
 
-async  validatePhoneClient(req, res) {
-        const {phone} = req.params
-        try {
-           if(!phone){
-            return res.status(400).json({message:"Numero de telefone não foi passado!"})
-           }
-           
-           const verifique =  await Client.findOne({where:{telefone: phone} })
-           if(!verifique){
-             return res.status(400).json({message:"Numero não presente na nosa base!"})
-           }
-           return res.status(200).json({message:"Numero encontrado na nossa base" , success:true , verifique})
-        } catch (error) {
-           console.error('Erro em verificar o contato passsado')
-           return res.status(500).json({message:"Erro no server para validar esse contato"})
-        }
+  } catch (error) {
+    console.error("❌ Erro em verificar o contato passado", error);
+    return res.status(500).json({ message: "Erro no server para validar esse contato" });
+  }
 },
 
 
   async accessByToken(req, res) {
-    const { token } = req.params;
+    const { uuid } = req.params;
 
-    const client = await Client.findOne({ where: { tokenAcess: token } });
+    const client = await Client.findOne({ where: { tokenAcess: uuid } });
 
     if (!client) {
-      return res.status(404).json({ message: "Link inválido ou expirado" });
+      return res.status(404).json({ message: "Acesso negado cliente não enontrado" });
     }
 
-    // let service = []
+    const token = jwt.sign(
+     { idUser: client.id, role: 'client' },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+     );
+
 
      const service = await Service.findAll({
        where: { idUser: client.idUser }
     });
 
-    console.log(service)
 
-    // Aqui você pode retornar os dados que o cliente pode acessar
     return res.status(200).json({
       success: true,
       client: client,
-      servico: service
+      servico: service,
+      token:token
     });
   },
 };

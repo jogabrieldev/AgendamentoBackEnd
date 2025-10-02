@@ -1,21 +1,22 @@
- export function normalizarTelefone(numeroJid) {
+
+// normalização de telefones no software
+export function normalizarTelefone(numeroJid) {
   if (!numeroJid) return null;
 
- 
-  let numero = numeroJid.split("@")[0];
 
-  numero = numero.replace(/\D/g, "");
+  let numero = numeroJid.replace(/\D/g, "");
 
-  if (numero.startsWith("55")) {
-    numero = numero.substring(2);
+  if (numero.length != 11) {
+    return null; 
   }
-
-  if (numero.length === 11 && numero[2] === "9") {
-    numero = numero.slice(0, 2) + numero.slice(3); 
-  }
-
-  if (numero.length !== 10) return null;
 
   return numero;
-};
+}
+
+export function formatToWhatsAppJid(phone) {
+
+  let number = phone.replace(/\D/g, "");
+
+  return `55${number}@s.whatsapp.net`;
+}
 

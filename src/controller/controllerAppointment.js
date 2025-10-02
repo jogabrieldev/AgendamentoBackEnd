@@ -6,7 +6,7 @@ import Client from '../models/client.js';
 import Service from '../models/services.js';
 import indisponible from '../models/indisponible.js';
 import { Op } from 'sequelize';
-
+import{formatToWhatsAppJid} from "../utils/phone.js"
 
 export async function getDisponibilidadeDoDia(req, res) {
   try {
@@ -63,11 +63,28 @@ export async function getDisponibilidadeDoDia(req, res) {
 
     const indisponiveisSet = new Set(indisponiveis.map(i => i.horario.slice(0,5)));
 
-
-    const resultado = horariosBase
+    const agora = new Date();
+     const resultado = horariosBase
       .filter(h => {
-        const horarioStr = h.horario.slice(0,5); // HH:mm
-        return !agendadosSet.has(horarioStr) && !indisponiveisSet.has(horarioStr);
+        const horarioStr = h.horario.slice(0, 5); 
+
+   
+        if (agendadosSet.has(horarioStr) || indisponiveisSet.has(horarioStr)) {
+          return false;
+        }
+
+       
+        if (dataInput.toDateString() === new Date().toDateString()) {
+          const [hora, minuto] = horarioStr.split(':').map(Number);
+          const horarioDate = new Date();
+          horarioDate.setHours(hora, minuto, 0, 0);
+
+          if (horarioDate <= agora) {
+            return false;
+          }
+        }
+
+        return true;
       })
       .map(h => ({
         idDispo: h.idDispo,
@@ -163,8 +180,9 @@ export async function createAppointment(req, res) {
     const message = `Olá, ${client.name}! 👋\nSeu agendamento foi realizado com sucesso.\n\nServiço(s): ${nomeServicos}\nData: ${data}\nHorário: ${horario}\n\nAguardamos você!`;
 
     console.log("Cliente agendamento" ,client.telefone)
+    const clientJid = formatToWhatsAppJid(client.telefone);
 
-    await sendMessage(client.telefone, message);
+    await sendMessage(clientJid, message);
 
     return res.status(201).json({
       message: "Agendamento realizado com sucesso e mensagem enviada ao cliente!",

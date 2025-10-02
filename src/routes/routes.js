@@ -1,5 +1,4 @@
 import express from 'express'
-import QRCode from 'qrcode'
 import { controllerUser } from '../controller/controllerUser.js'
 import { controllerAvailability } from '../controller/controllerAvailabillity.js'
 import { controllerService } from '../controller/controllerServices.js'
@@ -52,7 +51,7 @@ router.delete('/api/disponi/:id', verifyToken, (req ,res)=>{
 })
 
 //Indisponibilidade
-router.post('/api/indispinible' , verifyToken, (req ,res)=>{
+router.post('/api/indisponible' , verifyToken, (req ,res)=>{
    controllerIndisponible.registerHoursAndDateIndisponible(req ,res)
 })
 
@@ -68,6 +67,9 @@ router.post('/service' , verifyToken, (req , res)=>{
 
 router.get('/api/service' , verifyToken, (req ,res)=>{
    controllerService.getAllServices(req ,res)
+});
+router.get('/api/service/barber', verifyToken, (req, res) => {
+  controllerService.getAllServicesId(req, res);
 });
 
 router.put('/api/service/:id' , verifyToken, (req ,res)=>{
@@ -97,21 +99,16 @@ router.post('/client', (req ,res)=>{
     controllerClient.registerClient(req , res)
 });
 
-router.get('/client/link/:numberClient', verifyToken,(req ,res)=>{
-   controllerClient.generateAccessLink(req , res)
-} );
 
 router.get("/client/phone/:phone" , (req , res)=>{
    controllerClient.validatePhoneClient(req ,res)
 })
 
-router.get('/client/acesso/:token',(req , res)=>{
+router.get('/client/acesso/:uuid',(req , res)=>{
    controllerClient.accessByToken(req ,res)
 });
 
-router.put('/client/updateByToken/:token', (req, res) => {
-  controllerClient.updateClientByToken(req, res);
-});
+
 
 
 export default router

@@ -20,13 +20,20 @@ const Client = sequelize.define('client', {
   },
   
    telefone: {
-    type: DataTypes.TEXT(50),
-    allowNull: false
+    type: DataTypes.STRING(12),
+    allowNull: false,
+    unique:true
   },
+
+   email:{
+     type: DataTypes.STRING(50),
+     allowNull:false,
+     unique:true
+   },
 
   tokenAcess:{
      type:DataTypes.STRING,
-     allowNull: true
+     allowNull: false
   },
   idUser: {
     type: DataTypes.INTEGER,

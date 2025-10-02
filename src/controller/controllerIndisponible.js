@@ -11,6 +11,7 @@ export const controllerIndisponible = {
         return res.status(400).json({message:"Não foi passado todos os dados necessarios" , success:false})
         }
 
+      
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0); 
        const dataReq = new Date(dataIndisponivel);
@@ -41,7 +42,7 @@ export const controllerIndisponible = {
         success: false
        });
      }
-      
+     
         const result = await indisponible.create({
           status,
           horario,
