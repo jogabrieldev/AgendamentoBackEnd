@@ -4,6 +4,7 @@ import './src/models/associations.js'
 import router from './src/routes/routes.js'
 import { connectToWhatsApp } from './src/services/whatsappService.js'
 import cors from 'cors'
+import { startAppointmentStatusUpdater } from './src/services/appointmentStatusUpdate.js'
 
 const app = express()
 
@@ -53,6 +54,18 @@ const connectWithRetry = () => {
 };
 
 connectWithRetry();
+
+// atualização de status automatica
+( async ()=>{
+  try {
+    await startAppointmentStatusUpdater();
+
+  } catch (error) {
+    console.error("Erro no serviço de atualizar status")
+  }
+   
+})();
+
 
 (async () => {
   try {

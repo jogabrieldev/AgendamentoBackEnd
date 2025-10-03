@@ -1,4 +1,4 @@
-import { makeWASocket, DisconnectReason, initAuthCreds } from '@whiskeysockets/baileys';
+import { makeWASocket, DisconnectReason, initAuthCreds, unpadRandomMax16 } from '@whiskeysockets/baileys';
 import { DataTypes} from 'sequelize';
 import db from '../models/initModels.js'; 
 
@@ -165,6 +165,7 @@ export async function connectToWhatsApp() {
     }
   });
 
+
   // pegando a mensagem enviada para o contato
   
   const clientesQueReceberamLink = new Set();
@@ -175,7 +176,8 @@ export async function connectToWhatsApp() {
 
     if (!msg.message || msg.key.fromMe ) return;
 
-      const fullJid = msg.key.remoteJid;
+      const fullJid = msg.key.remoteJid
+      console.log("NUMERO" , fullJid)
 
       if(fullJid && !clientesQueReceberamLink.has(fullJid)){
 
@@ -185,7 +187,7 @@ export async function connectToWhatsApp() {
 
           await sock.sendMessage(fullJid, {
            text: `Olá! 👋 se ja possui cadastro, clique no botão ja cadastrado e digite o seu numero de telefone que ja foi cadastrado:\n${linkCadastro}`
-         } , { quoted: msg });
+         } , );
           clientesQueReceberamLink.add(fullJid);
       }
       return;
@@ -199,14 +201,29 @@ export function getCurrentQR() {
   return currentQR;
 };
 
+function normalizeJid(jid) {
+  if (!jid) return null;
+
+  // grupos ficam iguais
+  if (jid.endsWith('@g.us')) return jid;
+
+  // se for LID, converte para o formato padrão
+  if (jid.includes('@lid')) {
+    const numero = jid.split('@')[0].replace(/[^0-9]/g, '');
+    return `${numero}@s.whatsapp.net`;
+  }
+
+  return jid;
+}
+
+
+
 
 // enviando a mensagem
 export async function sendMessage(jid, message) {
   if (!sock) throw new Error('WhatsApp não conectado ainda.');
 
-   if (!jid.includes('@s.whatsapp.net')) {
-    jid = `${jid}@s.whatsapp.net`;
-  }
+   jid = normalizeJid(jid);
 
   console.log("Enviando mensagem para:", jid);
 

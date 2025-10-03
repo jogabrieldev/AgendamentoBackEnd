@@ -8,7 +8,7 @@ import { getCurrentQR  } from '../services/whatsappService.js'
 import { login } from '../controller/controllerAuthenticate.js'
 import { controllerIndisponible } from '../controller/controllerIndisponible.js'
 import { getDisponibilidadeDoDia, createAppointment , getAppointments } from '../controller/controllerAppointment.js';
-
+import { pendingTheClient } from '../controller/pendingClient.js'
 const router = express.Router()
 
 
@@ -107,6 +107,12 @@ router.get("/client/phone/:phone" , (req , res)=>{
 router.get('/client/acesso/:uuid',(req , res)=>{
    controllerClient.accessByToken(req ,res)
 });
+
+// pendencia do clinet
+
+router.get("/client/pending/:idclient" , (req ,res)=>{
+   pendingTheClient(req ,res)
+})
 
 
 

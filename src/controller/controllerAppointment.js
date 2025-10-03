@@ -74,11 +74,13 @@ export async function getDisponibilidadeDoDia(req, res) {
         }
 
        
-        if (dataInput.toDateString() === new Date().toDateString()) {
+        const isHoje = dataInput.toDateString() === hoje.toDateString();
+        if (isHoje) {
           const [hora, minuto] = horarioStr.split(':').map(Number);
           const horarioDate = new Date();
           horarioDate.setHours(hora, minuto, 0, 0);
 
+          // Somente horários **maiores que o atual** estarão disponíveis
           if (horarioDate <= agora) {
             return false;
           }
@@ -131,16 +133,37 @@ export async function createAppointment(req, res) {
   try {
     const { data, horario, idClient, idUser, idServi, preco, nota } = req.body;
 
+    // Normaliza a data recebida
     const hoje = new Date();
     hoje.setHours(0,0,0,0); // zera hora, minutos, segundos
-    const dataAgendamento = new Date(data);
-    dataAgendamento.setHours(0,0,0,0);
+    const partes = data.split('-').map(Number); // YYYY-MM-DD
+    const dataAgendamento = new Date(partes[0], partes[1] - 1, partes[2]);
+   
+    console.log("hoje" , hoje)
+    console.log("data" , dataAgendamento)
 
+
+
+    // Validação 1: não permite datas passadas
     if (dataAgendamento < hoje) {
       return res.status(400).json({ error: 'Não é possível agendar para datas passadas.' });
     }
 
-  
+    // Validação 2: não permite domingos
+    if (dataAgendamento.getDay() === 0) { // 0 = domingo
+      return res.status(400).json({ error: 'Não é permitido agendar aos domingos.' });
+    }
+
+    // Validação 3: não permite horários passados na data de hoje
+    if (dataAgendamento.getTime() === hoje.getTime()) {
+      const [hora, minuto] = horario.split(':').map(Number);
+      const agora = new Date();
+      if (hora < agora.getHours() || (hora === agora.getHours() && minuto <= agora.getMinutes())) {
+        return res.status(400).json({ error: 'Não é permitido agendar horários já passados para hoje.' });
+      }
+    }
+
+    // Validação 4: horário já reservado
     const existe = await Appointment.findOne({
       where: {
         data,
@@ -153,7 +176,7 @@ export async function createAppointment(req, res) {
       return res.status(400).json({ error: 'Horário já está reservado para esta data.' });
     }
 
-   
+    // Criação do agendamento
     const agendamento = await Appointment.create({
       data,
       horario,
@@ -169,17 +192,17 @@ export async function createAppointment(req, res) {
       return res.status(500).json({ error: 'Erro ao criar agendamento' });
     }
 
-   
+    // Preparar mensagem para o cliente
     const client = await Client.findByPk(idClient);
     const services = await Service.findAll({
-     where: { idServi: { [Op.in]: agendamento.idServi } }
+      where: { idServi: { [Op.in]: agendamento.idServi } }
     });
 
     const nomeServicos = services.map(s => s.name).join(', ');
 
     const message = `Olá, ${client.name}! 👋\nSeu agendamento foi realizado com sucesso.\n\nServiço(s): ${nomeServicos}\nData: ${data}\nHorário: ${horario}\n\nAguardamos você!`;
 
-    console.log("Cliente agendamento" ,client.telefone)
+    console.log("Cliente agendamento", client.telefone);
     const clientJid = formatToWhatsAppJid(client.telefone);
 
     await sendMessage(clientJid, message);
@@ -194,4 +217,5 @@ export async function createAppointment(req, res) {
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }
+
 
