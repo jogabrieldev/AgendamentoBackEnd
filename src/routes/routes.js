@@ -7,7 +7,7 @@ import { verifyToken } from '../middleware/authenticate.js'
 import { getCurrentQR  } from '../services/whatsappService.js'
 import { login } from '../controller/controllerAuthenticate.js'
 import { controllerIndisponible } from '../controller/controllerIndisponible.js'
-import { getDisponibilidadeDoDia, createAppointment , getAppointments } from '../controller/controllerAppointment.js';
+import { getDisponibilidadeDoDia, createAppointment , getAppointments , cancelAppointment, finishAppointment } from '../controller/controllerAppointment.js';
 import { pendingTheClient } from '../controller/pendingClient.js'
 const router = express.Router()
 
@@ -92,6 +92,14 @@ router.post('/appointments', (req ,res)=>{
    createAppointment(req ,res)
 } );
 
+//IMPLEMENTAR
+router.delete('/appointments/:id' , (req  , res)=>{
+   cancelAppointment(req ,res)
+})
+
+router.patch("/appointments/finalizar/:id", (req ,res)=>{
+     finishAppointment(req , res)
+})
 
 // Client
 

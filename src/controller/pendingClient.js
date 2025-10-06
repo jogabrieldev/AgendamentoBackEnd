@@ -13,18 +13,26 @@ export async function pendingTheClient(req, res) {
             });
         }
 
-        const today = new Date();
-        const todayStr = today.toISOString().split("T")[0]; 
+          const id = Number(idclient);
+
+       const todayStr = new Date().toLocaleDateString('en-CA'); // garante YYYY-MM-DD
+
+        console.log("🕓 Verificando pendências", {
+      idClient: id,
+      today: todayStr,
+    }); 
 
         const pendingAppointments = await Appointment.findAll({
             where: {
-                idClient: idclient,
-                status: "Agendado",
+                idClient: id,
+                status: { [Op.iLike]: "Agendado" } ,
                 data: {
                     [Op.gte]: todayStr
                 }
             }
         });
+
+        console.log('Pendencia' , pendingAppointments)
 
         if (pendingAppointments.length > 0) {
             return res.status(200).json({

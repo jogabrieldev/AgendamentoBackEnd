@@ -1,5 +1,6 @@
-import { makeWASocket, DisconnectReason, initAuthCreds, unpadRandomMax16 } from '@whiskeysockets/baileys';
+import { makeWASocket, DisconnectReason, initAuthCreds} from '@whiskeysockets/baileys';
 import { DataTypes} from 'sequelize';
+import qrcode from 'qrcode-terminal'
 import db from '../models/initModels.js'; 
 
 
@@ -134,10 +135,10 @@ export async function connectToWhatsApp() {
 
     if (qr && !qrAlreadyGenerated && connection !== 'open') {
         console.log("📸 QR Code gerado:", qr);
-        // qrcode.generate(qr, { small: true });
+        qrcode.generate(qr, { small: true });
 
-        currentQR = qr;
-        qrAlreadyGenerated = true
+        // currentQR = qr;
+        // qrAlreadyGenerated = true
         
     }
 

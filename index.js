@@ -4,10 +4,9 @@ import './src/models/associations.js'
 import router from './src/routes/routes.js'
 import { connectToWhatsApp } from './src/services/whatsappService.js'
 import cors from 'cors'
-import { startAppointmentStatusUpdater } from './src/services/appointmentStatusUpdate.js'
+
 
 const app = express()
-
 
 const allowedOrigins = [
   "http://localhost:4200", 
@@ -22,7 +21,7 @@ app.use(cors({
       callback(new Error("CORS bloqueado para essa origem: " + origin));
     }
   },
-   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
    credentials: true,
 }));
 
@@ -54,18 +53,6 @@ const connectWithRetry = () => {
 };
 
 connectWithRetry();
-
-// atualização de status automatica
-( async ()=>{
-  try {
-    await startAppointmentStatusUpdater();
-
-  } catch (error) {
-    console.error("Erro no serviço de atualizar status")
-  }
-   
-})();
-
 
 (async () => {
   try {
