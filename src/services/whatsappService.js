@@ -200,6 +200,8 @@ ${linkCadastro}
 - Caso não compareça na data e no horário agendados, *o valor do serviço será cobrado normalmente*.  
 - Por favor, evite faltar para não gerar transtornos.  
 
+💬 Pra desmarcar, é só mandar mensagem aqui mesmo nessa conversa, e enviar o codigo gerado na hora do agendamento!
+
 ✅ Garantimos que sua experiência será segura e prática!  
 
 Obrigado por escolher nossos serviços! 🌟`
