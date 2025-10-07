@@ -124,6 +124,9 @@ export const controllerService = {
     const { id } = req.params;
 
     try {
+      if(!id)return res.status(400).json({message:"Codigo do serviço não foi passado"})
+
+  
       const service = await Service.findByPk(id);
 
       if (!service) {
@@ -132,9 +135,7 @@ export const controllerService = {
 
       await service.destroy();
 
-      res
-        .status(200)
-        .json({ success: true, message: "Serviço deletado com sucesso" });
+      return res.status(200).json({ success: true, message: "Serviço deletado com sucesso" });
     } catch (error) {
       console.error("Erro ao deletar serviço:", error);
       res.status(500).json({ message: "Erro ao deletar serviço" });

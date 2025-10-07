@@ -87,26 +87,24 @@ router.get('/horarios-disponiveis/:data',(req ,res)=>{
 
 router.get("/appoiments" , (req ,res)=>{
    getAppointments(req , res)
-}) 
+});
 router.post('/appointments', (req ,res)=>{
    createAppointment(req ,res)
-} );
+});
 
-//IMPLEMENTAR
-router.delete('/appointments/:id' , (req  , res)=>{
+router.patch('/appointments/:codigo' , (req  , res)=>{
    cancelAppointment(req ,res)
-})
+});
 
 router.patch("/appointments/finalizar/:id", (req ,res)=>{
      finishAppointment(req , res)
-})
+});
 
 // Client
 
 router.post('/client', (req ,res)=>{
     controllerClient.registerClient(req , res)
 });
-
 
 router.get("/client/phone/:phone" , (req , res)=>{
    controllerClient.validatePhoneClient(req ,res)

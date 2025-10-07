@@ -17,11 +17,6 @@ export async function pendingTheClient(req, res) {
 
        const todayStr = new Date().toLocaleDateString('en-CA'); // garante YYYY-MM-DD
 
-        console.log("🕓 Verificando pendências", {
-      idClient: id,
-      today: todayStr,
-    }); 
-
         const pendingAppointments = await Appointment.findAll({
             where: {
                 idClient: id,
@@ -31,8 +26,6 @@ export async function pendingTheClient(req, res) {
                 }
             }
         });
-
-        console.log('Pendencia' , pendingAppointments)
 
         if (pendingAppointments.length > 0) {
             return res.status(200).json({

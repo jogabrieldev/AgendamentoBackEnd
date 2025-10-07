@@ -11,6 +11,11 @@ const Appointment = sequelize.define('appointment', {
     primaryKey: true,
     autoIncrement: true
   },
+  codigoAgendamento: {
+    type: DataTypes.STRING(6),
+    allowNull: false,
+    unique: true
+  },
   data: {
     type: DataTypes.DATEONLY,
     allowNull: false
@@ -62,7 +67,7 @@ const Appointment = sequelize.define('appointment', {
       model: Service,
       key: 'idServi'
     },
-    onDelete:'NO ACTION',
+    onDelete:'CASCADE',
     onUpdate:"CASCADE"
   },
 

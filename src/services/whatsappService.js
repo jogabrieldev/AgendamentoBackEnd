@@ -135,10 +135,10 @@ export async function connectToWhatsApp() {
 
     if (qr && !qrAlreadyGenerated && connection !== 'open') {
         console.log("📸 QR Code gerado:", qr);
-        qrcode.generate(qr, { small: true });
+        // qrcode.generate(qr, { small: true });
 
-        // currentQR = qr;
-        // qrAlreadyGenerated = true
+        currentQR = qr;
+        qrAlreadyGenerated = true
         
     }
 
@@ -166,7 +166,6 @@ export async function connectToWhatsApp() {
     }
   });
 
-
   // pegando a mensagem enviada para o contato
   
   const clientesQueReceberamLink = new Set();
@@ -178,7 +177,6 @@ export async function connectToWhatsApp() {
     if (!msg.message || msg.key.fromMe ) return;
 
       const fullJid = msg.key.remoteJid
-      console.log("NUMERO" , fullJid)
 
       if(fullJid && !clientesQueReceberamLink.has(fullJid)){
 
@@ -186,10 +184,32 @@ export async function connectToWhatsApp() {
          console.log('⚠️ Cliente não encontrado na base. Solicitando cadastro.');
           const linkCadastro = `${FRONT_URL}/cliente/cadastro`;
 
-          await sock.sendMessage(fullJid, {
-           text: `Olá! 👋 se ja possui cadastro, clique no botão ja cadastrado e digite o seu numero de telefone que ja foi cadastrado:\n${linkCadastro}`
-         } , );
+         await sock.sendMessage(fullJid, {
+           text: `📌 *Agendamento de Serviços*  
+
+        Olá! 👋  
+
+Se você já possui cadastro, clique no botão *"Já Cadastrado"* e digite seu número de telefone que já está registrado.  
+Se ainda não tem cadastro, clique em *"Cadastrar"* e preencha seus dados.  
+
+🔗 Acesse o link para cadastro ou login:  
+${linkCadastro}
+
+⚠️ *Regras importantes:*  
+- O cancelamento do agendamento só pode ser realizado *até um dia antes* da data marcada.  
+- Caso não compareça na data e no horário agendados, *o valor do serviço será cobrado normalmente*.  
+- Por favor, evite faltar para não gerar transtornos.  
+
+✅ Garantimos que sua experiência será segura e prática!  
+
+Obrigado por escolher nossos serviços! 🌟`
+});
+
           clientesQueReceberamLink.add(fullJid);
+
+          setTimeout(() => {
+            clientesQueReceberamLink.delete(fullJid);
+           }, 20 * 60 * 1000);
       }
       return;
   });

@@ -15,7 +15,7 @@ export const controllerClient = {
       if (!name || !phone) {
         return res.status(404).json({ message: "Dados obrigatorios não passados" });
       }
-       
+  
       if(!idUser){
          idUser = 1
        }
@@ -26,13 +26,16 @@ export const controllerClient = {
         }
 
        const telefone = normalizarTelefone(phone);
+       if(!telefone){
+         return res.status(400).json({message:"Telefone invalido! Deve ter 11 dígitos"})
+       }
   
       const validPhone = await Client.findOne({where:{telefone: telefone}})
       if(validPhone){
         return res.status(422).json({message:"numero ja cadastrado no sistema"})
       }
 
-      const tokenAcess = token || uuidv4();
+      const tokenAcess = uuidv4();
       if(!tokenAcess){
          return res.status(400).json({message:"Erro para gerar token do cliente!"})
       }
@@ -75,7 +78,6 @@ async validatePhoneClient(req, res) {
     if (!normalized) {
       return res.status(400).json({ message: "Telefone inválido!" });
     }
-
 
     // busca no cache ou banco
     const verifique = await getClientByPhone(normalized);
