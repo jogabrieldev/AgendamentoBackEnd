@@ -29,7 +29,7 @@ app.use(express.json())
 app.use(router)
 
 const createTableDataBase = () => {
-  dataBase.sequelize.sync({ alter: true }) 
+  dataBase.sequelize.sync({ force: true }) 
     .then(() => {
       console.log('✅ Conectado ao banco e tabelas sincronizadas');
     })
