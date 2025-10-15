@@ -47,7 +47,6 @@ const Client = sequelize.define('client', {
 }}, {
   tableName: "client"
 
-  
 });
 
 export default  Client;
