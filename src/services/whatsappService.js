@@ -133,7 +133,7 @@ export async function connectToWhatsApp() {
 
   sock = makeWASocket({
     auth: state,
-    printQRInTerminal: true,
+    printQRInTerminal: false,
     qrTimeout: 60000,
     connectTimeoutMs: 10000,
     browser: ["MyApp", "Chrome", "1.0"],
