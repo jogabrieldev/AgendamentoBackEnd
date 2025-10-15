@@ -173,7 +173,7 @@ export async function connectToWhatsApp() {
         tentativasReconexao = 0;
 
         // força reconexão
-        setTimeout(connectToWhatsApp, 1000);
+        setTimeout(connectToWhatsApp, 2000);
         return;
       }
 
@@ -183,8 +183,10 @@ export async function connectToWhatsApp() {
         setTimeout(connectToWhatsApp, 5000);
       } else {
         console.log('❌ Reconexão falhou.');
-        isReconnecting = false;
+        await WhatsAppSession.destroy({ where: { id: "default" } });
         tentativasReconexao = 0;
+        qrAlreadyGenerated = false;
+        setTimeout(connectToWhatsApp, 2000)
       }
     }
   });
