@@ -37,7 +37,8 @@ const WhatsAppSession = db.sequelize.define("WhatsAppSession", {
   timestamps: false,
 });
 
-await WhatsAppSession.sync();
+await WhatsAppSession.sync({ alter: true });
+console.log("✅ Tabela WhatsAppSession recriada com sucesso");
 
 
 //  Função para restaurar Buffers
@@ -132,7 +133,7 @@ export async function connectToWhatsApp() {
 
   sock = makeWASocket({
     auth: state,
-    printQRInTerminal: false,
+    printQRInTerminal: true,
     qrTimeout: 60000,
     connectTimeoutMs: 10000,
     browser: ["MyApp", "Chrome", "1.0"],
