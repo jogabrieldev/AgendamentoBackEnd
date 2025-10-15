@@ -113,68 +113,81 @@ export async function usePostgresAuth() {
 
 // fazendo conexão
 export async function connectToWhatsApp() {
-
-   if (sock) {
+  // logout se socket existente
+  if (sock) {
     try {
       await sock.logout();
     } catch (err) {
-      console.log("⚠️ Logout anterior falhou (provavelmente socket já desconectado).");
+      console.log("⚠️ Logout anterior falhou, prosseguindo...");
     }
     sock = null;
   }
-  
-  const { state, saveCreds } = await usePostgresAuth()
-   
-  
+
+  // limpa QR antigo
+  qrAlreadyGenerated = false;
+  currentQR = null;
+
+  // pega credenciais
+  const { state, saveCreds } = await usePostgresAuth();
+
   sock = makeWASocket({
     auth: state,
-    printQRInTerminal: false, 
-    qrTimeout: 60000,         
-    connectTimeoutMs: 6000,
-    browser:["MyApp" , "Chrome" , "1.0"]
+    printQRInTerminal: false,
+    qrTimeout: 60000,
+    connectTimeoutMs: 10000,
+    browser: ["MyApp", "Chrome", "1.0"],
   });
-
 
   sock.ev.on('creds.update', saveCreds);
 
-
-  sock.ev.on('connection.update', (update) => {
+  sock.ev.on('connection.update', async (update) => {
     const { qr, connection, lastDisconnect } = update;
-         console.log("🔄 Conexão atualizada:", update);
+    console.log("🔄 Conexão atualizada:", update);
 
+    // QR code gerado
     if (qr && !qrAlreadyGenerated && connection !== 'open') {
-        console.log("📸 QR Code gerado:", qr);
-        // qrcode.generate(qr, { small: true });
-
-        currentQR = qr;
-        qrAlreadyGenerated = true
-        
+      console.log("📸 QR Code gerado:", qr);
+      currentQR = qr;
+      qrAlreadyGenerated = true;
     }
 
+    // conexão aberta
     if (connection === 'open') {
       console.log('📱 Conectado ao WhatsApp');
       isReconnecting = false;
-      qrAlreadyGenerated = false
-    } 
+      qrAlreadyGenerated = false;
+      tentativasReconexao = 0;
+    }
 
-  
+    // conexão fechada
     if (connection === 'close' && !isReconnecting) {
       isReconnecting = true;
-      const statusCode = lastDisconnect?.error?.output?.statusCode;
-     
-       if (statusCode !== DisconnectReason.loggedOut && tentativasReconexao < MAX_TENTATIVAS) {
-    tentativasReconexao++;
-    console.log(`🔁 Tentativa de reconexão #${tentativasReconexao}`);
-    setTimeout(connectToWhatsApp, 5000);
-  } else {
-    console.log('❌ Reconexão falhou ou logout detectado.');
-    isReconnecting = false;
-    tentativasReconexao = 0;
-  }
 
+      const statusCode = lastDisconnect?.error?.output?.statusCode;
+
+      if (statusCode === DisconnectReason.loggedOut || !state.creds?.me) {
+        console.log("❌ Logout detectado ou sessão inválida. Limpando sessão e gerando novo QR...");
+        await WhatsAppSession.destroy({ where: { id: 'default' } });
+        qrAlreadyGenerated = false;
+        currentQR = null;
+        tentativasReconexao = 0;
+
+        // força reconexão
+        setTimeout(connectToWhatsApp, 1000);
+        return;
+      }
+
+      if (tentativasReconexao < MAX_TENTATIVAS) {
+        tentativasReconexao++;
+        console.log(`🔁 Tentativa de reconexão #${tentativasReconexao}`);
+        setTimeout(connectToWhatsApp, 5000);
+      } else {
+        console.log('❌ Reconexão falhou.');
+        isReconnecting = false;
+        tentativasReconexao = 0;
+      }
     }
   });
-
   // pegando a mensagem enviada para o contato
   
   const clientesQueReceberamLink = new Set();
