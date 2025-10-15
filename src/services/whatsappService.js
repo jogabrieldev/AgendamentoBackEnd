@@ -114,6 +114,15 @@ export async function usePostgresAuth() {
 // fazendo conexão
 export async function connectToWhatsApp() {
 
+   if (sock) {
+    try {
+      await sock.logout();
+    } catch (err) {
+      console.log("⚠️ Logout anterior falhou (provavelmente socket já desconectado).");
+    }
+    sock = null;
+  }
+  
   const { state, saveCreds } = await usePostgresAuth()
    
   
