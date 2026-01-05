@@ -53,14 +53,14 @@ const connectWithRetry = () => {
 
 connectWithRetry();
 
-(async () => {
-  try {
-    await connectToWhatsApp();
-    console.log("📱 Serviço WhatsApp inicializado");
-  } catch (err) {
-    console.error(" Erro ao conectar ao WhatsApp:", err);
-  }
-})();
+// (async () => {
+//   try {
+//     await connectToWhatsApp();
+//     console.log("📱 Serviço WhatsApp inicializado");
+//   } catch (err) {
+//     console.error(" Erro ao conectar ao WhatsApp:", err);
+//   }
+// })();
 
 
 const PORT = process.env.PORT || 3000;
