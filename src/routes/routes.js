@@ -4,7 +4,6 @@ import { controllerAvailability } from '../controller/controllerAvailabillity.js
 import { controllerService } from '../controller/controllerServices.js'
 import { controllerClient } from '../controller/controllerClient.js'
 import { verifyToken } from '../middleware/authenticate.js'
-import { getCurrentQR  } from '../services/whatsappService.js'
 import { login } from '../controller/controllerAuthenticate.js'
 import { controllerIndisponible } from '../controller/controllerIndisponible.js'
 import { getDisponibilidadeDoDia, createAppointment , getAppointments , cancelAppointment, finishAppointment } from '../controller/controllerAppointment.js';
@@ -17,12 +16,12 @@ router.get('/', (req, res) => {
   res.send('🚀 API Agendamento está rodando!');
 });
 
-router.get('/qr' , async (req ,res)=>{
+// router.get('/qr' , async (req ,res)=>{
    
-   const qr = getCurrentQR()
+//    const qr = getCurrentQR()
 
-    return res.json({ qr });
-})
+//     return res.json({ qr });
+// })
 //user
 router.post('/user' , (req ,res)=>{
     controllerUser.registerUser(req ,res)

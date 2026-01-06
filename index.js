@@ -2,7 +2,6 @@ import express from 'express'
 import dataBase  from './src/models/initModels.js'
 import './src/models/associations.js'
 import router from './src/routes/routes.js'
-import { connectToWhatsApp } from './src/services/whatsappService.js'
 import cors from 'cors'
 
 const app = express()
@@ -34,24 +33,23 @@ const createTableDataBase = () => {
     })
     .catch(err => {
       console.error('❌ Erro ao conectar/sincronizar:', err.message);
-      setTimeout(connectWithRetry, 5000);
     });
 };
 createTableDataBase()
 
 
-const connectWithRetry = () => {
-   dataBase.sequelize.authenticate()
-    .then(() => {
-      console.log('✅ Conectado ao banco');
-    })
-    .catch(err => {
-      console.error(' Tentando reconectar...', err.message);
-      setTimeout(connectWithRetry, 5000); 
-    });
-};
+// const connectWithRetry = () => {
+//    dataBase.sequelize.authenticate()
+//     .then(() => {
+//       console.log('✅ Conectado ao banco');
+//     })
+//     .catch(err => {
+//       console.error(' Tentando reconectar...', err.message);
+//       setTimeout(connectWithRetry, 5000); 
+//     });
+// };
 
-connectWithRetry();
+// connectWithRetry();
 
 // (async () => {
 //   try {

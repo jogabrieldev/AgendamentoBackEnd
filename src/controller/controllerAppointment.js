@@ -1,7 +1,6 @@
 
 import Availability from '../models/availability.js';
 import Appointment from '../models/appointment.js';
-import { sendMessage } from '../services/whatsappService.js';
 import Client from '../models/client.js';
 import Service from '../models/services.js';
 import indisponible from '../models/indisponible.js';

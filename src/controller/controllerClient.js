@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from "uuid";
 import  jsonWebToken from "jsonwebtoken";
 import Service from "../models/services.js";
 import { normalizarTelefone } from "../utils/phone.js";
-import { updateClientCache , getClientByPhone } from "../services/clientService.js";
 
 const jwt = jsonWebToken
 
