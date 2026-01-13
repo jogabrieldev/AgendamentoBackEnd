@@ -3,7 +3,7 @@ import { controllerUser } from '../controller/controllerUser.js'
 import { controllerAvailability } from '../controller/controllerAvailabillity.js'
 import { controllerService } from '../controller/controllerServices.js'
 import { controllerClient } from '../controller/controllerClient.js'
-import { verifyToken } from '../middleware/authenticate.js'
+import { verifyToken } from '../middleware/verifyToken.js'
 import { login } from '../controller/controllerAuthenticate.js'
 import { controllerIndisponible } from '../controller/controllerIndisponible.js'
 import { getDisponibilidadeDoDia, createAppointment , getAppointments , cancelAppointment, finishAppointment } from '../controller/controllerAppointment.js';
@@ -24,11 +24,11 @@ router.get('/', (req, res) => {
 // })
 //user
 router.post('/user' , (req ,res)=>{
-    controllerUser.registerUser(req ,res)
+   controllerUser.registerUser(req ,res)
 })
 
 router.post('/authenticate' ,(req ,res)=>{
-    login(req ,res)
+   login(req ,res)
 })
 
 //Disponnibilidade

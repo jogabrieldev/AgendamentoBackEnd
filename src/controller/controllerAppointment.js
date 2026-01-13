@@ -12,7 +12,7 @@ import { generateCode } from '../utils/generateCode.js';
 export async function getDisponibilidadeDoDia(req, res) {
   try {
     const dataSelecionada = req.params.data;
-
+  
     if (!dataSelecionada) {
       return res.status(400).json({
         success: false,
