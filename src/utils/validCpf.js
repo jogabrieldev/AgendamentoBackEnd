@@ -1,4 +1,4 @@
- export function validationCPF(cpf) {
+export function validationCPF(cpf) {
 
   const cpfLimpo = cpf.toString().replace(/\D/g, '');
 

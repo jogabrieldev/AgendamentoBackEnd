@@ -1,128 +1,79 @@
+import { where } from "sequelize";
 import Availability from "../models/availability.js"
 import User from "../models/user.js";
+import { authenticateAvailability } from "../services/authenticateAvailability.js";
 
 export const controllerAvailability  = {
 
   async registerAvailability(req, res) {
     try {
-      const { horario, bodyStatus, idUser } = req.body;
-      
-      if (!horario || !bodyStatus || !idUser) {
-        return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
-      }
+      const { horario, bodyStatus } = req.body;
+      const userId = req.userId;
 
-      const user = await User.findByPk(idUser);
-      if (!user) {
-        return res.status(404).json({ message: 'Usuário (barbeiro) não encontrado' });
-      }
-      
-      const status = bodyStatus
+      const dateValid = await authenticateAvailability.authenticateRegisterAvailability(horario, bodyStatus , userId)
+      const novaDisponibilidade = await Availability.create({...dateValid});
 
-      const valoresValidos = ["Disponível", "Indisponível" , "Agendado" , "Confirmado"];
-      if (!valoresValidos.includes(status)) {
-       return res.status(402).json({
-       message: "Valor de status é inválido",
-       success: false
-     });
-    }
-   
-    const horariosValidos = ["07:00" , "08:00" , 
-      "09:00" , "10:00" , "11:00" , "12:00" ,
-       "13:00" , "14:00" , "15:00" , 
-      "16:00" , "17:00", "18:00" , "19:00" , 
-      "20:00" , "21:00"]
-      
-      const horarioLimpo = horario.trim()
-      if(!horariosValidos.includes(horarioLimpo)){
-         return res.status(402).json({message:"Valor passado como horario não e valido" , success:false})
-      }
-
-      const horarioExistente = await Availability.findOne({
-      where: {
-        idUser: idUser,
-        horario: horario
-      }
-    });
-
-    if (horarioExistente) {
-      return res.status(409).json({
-        success: false,
-        message: 'Este horário já foi registrado para este usuário!'
-      });
-    }
-
-      const novaDisponibilidade = await Availability.create({
-        horario,
-        status,
-        idUser
-      });
-
-      res.status(201).json({success:true , disponivel: novaDisponibilidade});
-
+      if(novaDisponibilidade)  return res.status(201).json({success:true , disponivel: novaDisponibilidade});
+  
     } catch (error) {
-      console.error('Erro ao registrar disponibilidade:', error);
-      res.status(500).json({ message: 'Erro interno do servidor' });
+      const isValidationError = error.message && !error.message.includes('Sequelize');
+      return res.status(isValidationError ? 400 : 500).json({
+        success: false,
+        message: error.message || "Erro interno no servidor"
+      });
     }
-  } ,
+  },
   
  async getAllAvailabillity(req, res) {
-  try {
-    const disponibilidade = await Availability.findAll({ raw: true });
- 
-    return res.status(200).json({ message: 'Success', horarios: disponibilidade });
+    try {
+      const userId = req.userId;
 
-  } catch (error) {
-    console.error('Erro para pegar os dados de disponibilidade:', error);
-    res.status(500).json({ success: false, message: 'Erro no servidor' });
-  }
-},
+      const disponibilidade = await Availability.findAll({ where:{idUser:userId} });
+     if(disponibilidade) return res.status(200).json({ message: 'Success', horarios: disponibilidade });
+    
+
+    } catch (error) {
+      console.error('Erro para pegar os dados de disponibilidade:', error);
+      return res.status(500).json({ success: false, message: 'Erro no servidor para buscar disponibilidade' });
+   }
+  },
 
 
   async updateAvailabilityStatus(req, res) {
-  try {
-    const { id } = req.params;
-    const { horario, bodyStatus} = req.body;
+    try {
+     const { id } = req.params;
+     const { horario, bodyStatus} = req.body;
+    
+     const { availability, newDate } = await authenticateAvailability.authenticateAvailabilityUpdate(id, horario, bodyStatus);
 
-    if (!bodyStatus) {
-      return res.status(400).json({ message: 'O campo status é obrigatório' });
+      await availability.update({
+        horario: newDate.horario,
+        status:newDate.status
+      });
+
+     return res.status(200).json({ success: true, message: 'Status atualizado com sucesso', hours: availability});
+    } catch (error) {
+      console.error('Erro ao atualizar status da disponibilidade:', error);
+      const isValidationError = error.message && !error.message.includes('Sequelize');
+      return res.status(isValidationError ? 400 : 500).json({
+        success: false,
+        message: error.message || "Erro interno no servidor"
+      });
     }
+  },
 
-    const status = bodyStatus
-      
-      const valoresValidos = ["Disponível", "Indisponível" , "Agendado" , "Confirmado"];
-      if (!valoresValidos.includes(status)) {
-       return res.status(402).json({
-       message: "Valor de status é inválido",
-       success: false
-     });
-    }
+  async deleteAvailability(req ,res){
 
-
-    const availability = await Availability.findByPk(id);
-
-    if (!availability) {
-      return res.status(404).json({ message: 'Disponibilidade não encontrada' });
-    }
-
-    availability.horario = horario !== undefined ? horario : hoursDisponivel.horario;
-    availability.status = status !== undefined ? status : hoursDisponivel.status;
-
-    await availability.save();
-
-    res.status(200).json({ success: true, message: 'Status atualizado com sucesso', hours: availability});
-
-  } catch (error) {
-    console.error('Erro ao atualizar status da disponibilidade:', error);
-    res.status(500).json({ message: 'Erro interno do servidor' });
-  }
-},
-
- async deleteAvailability(req ,res){
-      
- const  {id}  = req.params;
+    const  {id}  = req.params;
+    const userId = req.userId;
 
     try {
-      const hoursDisponivel = await Availability.findOne({ where: { idDispo: id } });
+      const hoursDisponivel = await Availability.findOne({
+        where: {
+          idDispo: id,
+          idUser: userId
+        } 
+      });
 
       if (!hoursDisponivel) {
         return res.status(404).json({ message: "horario não encontrado" });
@@ -130,13 +81,11 @@ export const controllerAvailability  = {
 
       await hoursDisponivel.destroy();
 
-      res
-        .status(200)
-        .json({ success: true, message: "Horario deletado com sucesso" });
+      return res.status(200).json({ success: true, message: "Horario deletado com sucesso" });
     } catch (error) {
-      console.error("Erro ao deletar serviço:", error);
-      res.status(500).json({ message: "Erro ao deletar serviço" });
+      console.error("Erro ao deletar horario de disponibilidade:", error);
+      return res.status(500).json({ message: "Erro ao deletar horario de disponibilidade" });
     }
- }
+  }
 
 }

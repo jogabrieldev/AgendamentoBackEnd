@@ -54,7 +54,7 @@ router.post('/api/indisponible' , verifyToken, (req ,res)=>{
    controllerIndisponible.registerHoursAndDateIndisponible(req ,res)
 })
 
-router.get('/api/indisponible/:idUser' , verifyToken, (req ,res)=>{
+router.get('/api/indisponible' , verifyToken, (req ,res)=>{
    controllerIndisponible.getHoursAndDateIndisponible(req ,res)
 })
 
@@ -68,7 +68,7 @@ router.get('/api/service' , verifyToken, (req ,res)=>{
    controllerService.getAllServices(req ,res)
 });
 router.get('/api/service/barber', verifyToken, (req, res) => {
-  controllerService.getAllServicesId(req, res);
+  controllerService.getAllServices(req, res);
 });
 
 router.put('/api/service/:id' , verifyToken, (req ,res)=>{
