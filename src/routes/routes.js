@@ -3,7 +3,7 @@ import { controllerUser } from '../controller/controllerUser.js'
 import { controllerAvailability } from '../controller/controllerAvailabillity.js'
 import { controllerService } from '../controller/controllerServices.js'
 import { controllerClient } from '../controller/controllerClient.js'
-import { verifyToken } from '../middleware/authenticate.js'
+import { verifyToken } from '../middleware/verifyToken.js'
 import { login } from '../controller/controllerAuthenticate.js'
 import { controllerIndisponible } from '../controller/controllerIndisponible.js'
 import { getDisponibilidadeDoDia, createAppointment , getAppointments , cancelAppointment, finishAppointment } from '../controller/controllerAppointment.js';
@@ -24,11 +24,11 @@ router.get('/', (req, res) => {
 // })
 //user
 router.post('/user' , (req ,res)=>{
-    controllerUser.registerUser(req ,res)
+   controllerUser.registerUser(req ,res)
 })
 
 router.post('/authenticate' ,(req ,res)=>{
-    login(req ,res)
+   login(req ,res)
 })
 
 //Disponnibilidade
@@ -54,7 +54,7 @@ router.post('/api/indisponible' , verifyToken, (req ,res)=>{
    controllerIndisponible.registerHoursAndDateIndisponible(req ,res)
 })
 
-router.get('/api/indisponible/:idUser' , verifyToken, (req ,res)=>{
+router.get('/api/indisponible' , verifyToken, (req ,res)=>{
    controllerIndisponible.getHoursAndDateIndisponible(req ,res)
 })
 
@@ -68,7 +68,7 @@ router.get('/api/service' , verifyToken, (req ,res)=>{
    controllerService.getAllServices(req ,res)
 });
 router.get('/api/service/barber', verifyToken, (req, res) => {
-  controllerService.getAllServicesId(req, res);
+  controllerService.getAllServices(req, res);
 });
 
 router.put('/api/service/:id' , verifyToken, (req ,res)=>{

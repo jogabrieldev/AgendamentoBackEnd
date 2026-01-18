@@ -26,6 +26,9 @@ app.use(cors({
 app.use(express.json())
 app.use(router)
 
+// quando quiser recriar {force:true}
+//quando quiser atualizar {alter:true}
+
 const createTableDataBase = () => {
   dataBase.sequelize.sync() 
     .then(() => {
@@ -36,29 +39,6 @@ const createTableDataBase = () => {
     });
 };
 createTableDataBase()
-
-
-// const connectWithRetry = () => {
-//    dataBase.sequelize.authenticate()
-//     .then(() => {
-//       console.log('✅ Conectado ao banco');
-//     })
-//     .catch(err => {
-//       console.error(' Tentando reconectar...', err.message);
-//       setTimeout(connectWithRetry, 5000); 
-//     });
-// };
-
-// connectWithRetry();
-
-// (async () => {
-//   try {
-//     await connectToWhatsApp();
-//     console.log("📱 Serviço WhatsApp inicializado");
-//   } catch (err) {
-//     console.error(" Erro ao conectar ao WhatsApp:", err);
-//   }
-// })();
 
 
 const PORT = process.env.PORT || 3000;

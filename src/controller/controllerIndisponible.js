@@ -1,124 +1,63 @@
+import { authenticateIndisponibilidade } from "../services/authenticateIndisponibilidade.js";
 import indisponible from "../models/indisponible.js";
-import User from '../models/user.js'
-import Appointment from "../models/appointment.js";
 import sequelize from "../config/database.js";
 
 export const controllerIndisponible = {
-      
-  async registerHoursAndDateIndisponible(req ,res){
 
-    const transaction = await sequelize.transaction()
-      try {
-        const {status , horario , dataIndisponivel ,idUser } = req.body
-
-        console.log("Corpo" , req.body)
-
-        if(!horario || !dataIndisponivel || !idUser){
-         await transaction.rollback()
-        return res.status(400).json({message:"Não foi passado todos os dados necessarios" , success:false})
-        }
-
-        const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0); 
-       const dataReq = new Date(dataIndisponivel);
-
-        if (dataReq < hoje) {
+    async registerHoursAndDateIndisponible(req, res) {
+        const transaction = await sequelize.transaction();
         
-        await transaction.rollback()
-        return res.status(400).json({
-         message: "A data informada não pode ser no passado",
-         success: false
-      });
-     }
+        try {
+            const { status, horario, dataIndisponivel,  } = req.body;
+            const idUser= req.userId
 
-      const user = await User.findByPk(idUser);
-        if (!user) {
-          await transaction.rollback();
-         return res.status(404).json({ message: 'Usuário (barbeiro) não encontrado' });
-        };
+            const validatedData = await authenticateIndisponibilidade.validateRegistration(
+                status, 
+                horario, 
+                dataIndisponivel, 
+                idUser, 
+                transaction
+            );
 
-        const agendamentoExistente = await Appointment.findOne({
-          where:{
-          idUser,
-          horario,
-          data: dataIndisponivel,
-          status: 'Agendado'
-        },
-        lock:transaction.LOCK.UPDATE,
-        transaction:transaction
-      });
+            const result = await indisponible.create(validatedData, { transaction });
 
-       if (agendamentoExistente) {
-        await transaction.rollback()
-        return res.status(400).json({
-        message: "Esse horário já possui um agendamento ativo (Agendado), não pode ser marcado como indisponível.",
-        success: false
-      });
-     }
+            await transaction.commit();
 
-        const jaExiste = await indisponible.findOne({
-        where: {
-        idUser,
-        horario,
-        dataIndisponivel
-       },
-       lock:transaction.LOCK.UPDATE,
-       transaction: transaction
-      });
+            return res.status(201).json({
+                message: 'Horario registrado com indisponivel',
+                success: true,
+                result
+            });
 
-       if (jaExiste) {
-        await transaction.rollback();
-        return res.status(400).json({
-        message: "Esse horário já foi marcado como indisponível para essa data",
-        success: false
-       });
-     }
-     
-        const result = await indisponible.create({
-          status,
-          horario,
-         dataIndisponivel,
-         idUser
-       }, {transaction:transaction});
-       await transaction.commit()
-              
-      return res.status(201).json({message:'Horario registrado com indisponivel' , success:true , result})
-    } catch (error) {
-      await transaction.roolback()
-      console.error('Erro para registrar horario e data indisponivel' , error)
-     return res.status(500).json({message:"Erro no server para registrar horario indisponivel"})
-     };
-   },
-  
-async getHoursAndDateIndisponible(req, res) {
-  try {
-    const { idUser } = req.params;
+        }catch (error) {
+          if (transaction) await transaction.rollback();
+            
+          console.error('Erro no processamento:', error.message);
+            
+            const isValidationError = error.message && !error.message.includes('Sequelize');
+            return res.status(isValidationError ? 400 : 500).json({
+              success: false,
+              message: error.message || "Erro interno no servidor"
+            });
+        }
+    },
 
-    if (!idUser) {
-      return res.status(400).json({ 
-        message: 'Não foi passado o id do usuário. Verifique por favor.', 
-        success: false 
-      });
+    async getHoursAndDateIndisponible(req, res) {
+        try {
+            const idUser = req.userId;
+
+            if (!idUser) {
+                return res.status(400).json({ message: 'ID do usuário não fornecido', success: false });
+            }
+
+            const horarios = await indisponible.findAll({
+                where: { idUser },
+                raw: true
+            });
+
+            return res.status(200).json({ success: true, horarios });
+        } catch (error) {
+            return res.status(500).json({ success: false, message: 'Erro no servidor' });
+        }
     }
-
-    const Indisponible = await indisponible.findAll({
-      where: { idUser },
-      raw: true
-    });
-
-    return res.status(200).json({ 
-      message: 'Success', 
-      success: true,
-      horarios: Indisponible 
-    });
-
-  } catch (error) {
-    console.error('Erro para pegar os dados de disponibilidade:', error);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Erro no servidor' 
-    });
-  }
-}
-
-}
+};
